@@ -1,18 +1,18 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLES } from "@/lib/constants";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
-import { mockActivities, mockMembers, mockReports, mockSites, mockSmallGroups } from "@/lib/mockData";
-import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UserCheck, UserX, CheckCircle, Zap, Loader2, UsersRound, Briefcase, Lightbulb } from "lucide-react";
+import { mockActivities, mockMembers, mockReports, mockSites, mockSmallGroups, mockTransactions } from "@/lib/mockData";
+import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UsersRound, Briefcase, Lightbulb, Zap } from "lucide-react"; // Removed UserCheck, UserX, CheckCircle, Loader2 as they are not used directly here
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+// import Image from "next/image"; // Not used directly
 import {
   ChartContainer,
   ChartTooltip,
@@ -21,6 +21,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Pie, PieChart, Cell } from "recharts";
+import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 
 const chartConfigActivities = {
   planned: { label: "Planned", color: "hsl(var(--chart-2))" },
@@ -33,31 +34,46 @@ const chartConfigMembers = {
   nonStudent: { label: "Non-Students", color: "hsl(var(--chart-4))" },
 };
 
-export default function NationalCoordinatorDashboard() {
+export default function DashboardPage() { // Renamed component to avoid conflict
   const { currentUser } = useAuth();
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
 
-  // Calculate stats (replace with actual data fetching and processing)
-  const totalActivities = mockActivities.length;
-  const plannedActivities = mockActivities.filter(a => a.status === "planned").length;
-  const executedActivities = mockActivities.filter(a => a.status === "executed").length;
-  
-  const totalMembers = mockMembers.length;
-  const studentMembers = mockMembers.filter(m => m.type === "student").length;
-  const nonStudentMembers = mockMembers.filter(m => m.type === "non-student").length;
-  
-  const totalReports = mockReports.length;
-  const totalSites = mockSites.length;
-  const totalSmallGroups = mockSmallGroups.length;
+  // Apply date filter to relevant data
+  const filteredActivities = useMemo(() => applyDateFilter(mockActivities, dateFilter), [dateFilter]);
+  const filteredMembers = useMemo(() => applyDateFilter(mockMembers.map(m => ({...m, date: m.joinDate})), dateFilter), [dateFilter]); // Adapt member data for filter
+  const filteredReports = useMemo(() => applyDateFilter(mockReports.map(r => ({...r, date: r.submissionDate})), dateFilter), [dateFilter]); // Adapt report data for filter
+  const filteredTransactions = useMemo(() => applyDateFilter(mockTransactions, dateFilter), [dateFilter]);
 
-  // Mock financial data
-  const totalIncome = 5500; // Example value
-  const totalExpenses = 3200; // Example value
-  const netBalance = totalIncome - totalExpenses;
+
+  // Calculate stats from filtered data
+  const totalActivities = filteredActivities.length;
+  const plannedActivities = filteredActivities.filter(a => a.status === "planned").length;
+  const executedActivities = filteredActivities.filter(a => a.status === "executed").length;
+  
+  const totalMembers = filteredMembers.length;
+  const studentMembers = filteredMembers.filter(m => m.type === "student").length;
+  const nonStudentMembers = filteredMembers.filter(m => m.type === "non-student").length;
+  
+  const totalReports = filteredReports.length;
+  const totalSites = mockSites.length; // Not typically date filtered
+  const totalSmallGroups = mockSmallGroups.length; // Not typically date filtered
+
+  // Financial data from filtered transactions
+  const totalIncome = filteredTransactions
+    .filter(t => t.transactionType === 'income_source' && t.recipientEntityType === 'national')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const nationalExpenses = filteredTransactions
+    .filter(t => t.senderEntityType === 'national' && t.transactionType === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const fundsDistributedToSites = filteredTransactions
+    .filter(t => t.senderEntityType === 'national' && t.recipientEntityType === 'site')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const netBalance = totalIncome - (nationalExpenses + fundsDistributedToSites);
 
   const activityStatusData = [
     { status: "Planned", count: plannedActivities, fill: chartConfigActivities.planned.color },
     { status: "Executed", count: executedActivities, fill: chartConfigActivities.executed.color },
-    { status: "Cancelled", count: mockActivities.filter(a => a.status === "cancelled").length, fill: chartConfigActivities.cancelled.color },
+    { status: "Cancelled", count: filteredActivities.filter(a => a.status === "cancelled").length, fill: chartConfigActivities.cancelled.color },
   ];
 
   const memberTypeData = [
@@ -65,14 +81,22 @@ export default function NationalCoordinatorDashboard() {
     { type: "Non-Students", count: nonStudentMembers, fill: chartConfigMembers.nonStudent.color },
   ];
 
+  const recentActivitiesToDisplay = filteredActivities
+    .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0,3);
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title={`Welcome, ${currentUser?.name || 'User'}!`}
-        description={currentUser?.role === ROLES.NATIONAL_COORDINATOR ? "National overview of all AYLF activities." : (currentUser?.role === ROLES.SITE_COORDINATOR ? "Overview of your site's activities." : "Overview of your small group's activities.")}
+        description={`${currentUser?.role === ROLES.NATIONAL_COORDINATOR ? "National overview." : (currentUser?.role === ROLES.SITE_COORDINATOR ? "Site overview." : "Small group overview.")} Filter: ${dateFilter.display}`}
         icon={currentUser?.role === ROLES.NATIONAL_COORDINATOR ? Building : (currentUser?.role === ROLES.SITE_COORDINATOR ? ListChecks : Users)}
       />
+
+      <div className="mb-6">
+        <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey}/>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
         <StatCard 
@@ -110,13 +134,13 @@ export default function NationalCoordinatorDashboard() {
               value={totalSmallGroups} 
               icon={UsersRound} 
               description="Active small groups"
-              href="/dashboard/members" // Or a dedicated small groups page if it exists
+              href="/dashboard/members" 
             />
             <StatCard 
               title="Net Balance" 
-              value={`$${netBalance.toLocaleString()}`} 
+              value={`${netBalance < 0 ? '-' : ''}$${Math.abs(netBalance).toLocaleString()}`} 
               icon={Briefcase} 
-              description={`Income: $${totalIncome.toLocaleString()}, Expenses: $${totalExpenses.toLocaleString()}`}
+              description={`Income: $${totalIncome.toLocaleString()}, Outflows: $${(nationalExpenses + fundsDistributedToSites).toLocaleString()}`}
               href="/dashboard/finances"
             />
           </>
@@ -125,24 +149,24 @@ export default function NationalCoordinatorDashboard() {
           <>
              <StatCard 
                title="Site Reports" 
-               value={mockReports.filter(r => r.siteId === currentUser.siteId).length} 
+               value={filteredReports.filter(r => r.siteId === currentUser?.siteId).length} 
                icon={FileText}
-               href="/dashboard/reports/view" // User can filter by their site on the reports page
+               href="/dashboard/reports/view" 
               />
              <StatCard 
                title="Site Small Groups" 
-               value={mockSmallGroups.filter(sg => sg.siteId === currentUser.siteId).length} 
+               value={mockSmallGroups.filter(sg => sg.siteId === currentUser?.siteId).length} // Small group count not date filtered
                icon={UsersRound}
-               href="/dashboard/members" // User can filter/see members of their site's small groups
+               href="/dashboard/members" 
               />
           </>
         )}
          {currentUser?.role === ROLES.SMALL_GROUP_LEADER && (
            <StatCard 
              title="Group Reports" 
-             value={mockReports.filter(r => r.smallGroupId === currentUser.smallGroupId).length} 
+             value={filteredReports.filter(r => r.smallGroupId === currentUser?.smallGroupId).length} 
              icon={FileText}
-             href="/dashboard/reports/view" // User can filter by their small group on the reports page
+             href="/dashboard/reports/view" 
             />
         )}
       </div>
@@ -151,7 +175,7 @@ export default function NationalCoordinatorDashboard() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><BarChart3 className="text-primary"/> Activity Status Overview</CardTitle>
-            <CardDescription>Distribution of activities by their current status.</CardDescription>
+            <CardDescription>Distribution of activities by status for the selected period.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfigActivities} className="h-[250px] w-full">
@@ -174,18 +198,19 @@ export default function NationalCoordinatorDashboard() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Member Type Distribution</CardTitle>
-            <CardDescription>Breakdown of members by type (Student vs. Non-Student).</CardDescription>
+            <CardDescription>Breakdown of members by type for the selected period (based on join date).</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
              <ChartContainer config={chartConfigMembers} className="h-[250px] w-full max-w-[300px]">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent nameKey="count" />} />
                 <Pie data={memberTypeData} dataKey="count" nameKey="type" cx="50%" cy="50%" outerRadius={100} labelLine={false}
-                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                     const RADIAN = Math.PI / 180;
                     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
                     const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                    if (percent === 0) return null; // Don't render label if percent is 0
                     return (
                       <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="12px">
                         {`${(percent * 100).toFixed(0)}%`}
@@ -244,10 +269,10 @@ export default function NationalCoordinatorDashboard() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Activity className="text-primary"/> Recent Activities</CardTitle>
-          <CardDescription>A quick look at recently executed or planned activities.</CardDescription>
+          <CardDescription>A quick look at recently executed or planned activities for the selected period.</CardDescription>
         </CardHeader>
         <CardContent>
-          {mockActivities.slice(0, 3).map(activity => (
+          {recentActivitiesToDisplay.length > 0 ? recentActivitiesToDisplay.map(activity => (
             <div key={activity.id} className="mb-4 pb-4 border-b last:border-b-0 last:pb-0 last:mb-0">
               <div className="flex justify-between items-start">
                 <div>
@@ -264,7 +289,9 @@ export default function NationalCoordinatorDashboard() {
               </div>
               <p className="text-sm mt-1">{activity.description}</p>
             </div>
-          ))}
+          )) : (
+            <p className="text-muted-foreground text-center py-4">No recent activities found for the selected period.</p>
+          )}
            <Link href="/dashboard/activities" passHref>
              <Button variant="link" className="mt-2 px-0">View All Activities →</Button>
            </Link>
@@ -274,5 +301,3 @@ export default function NationalCoordinatorDashboard() {
     </RoleBasedGuard>
   );
 }
-
-

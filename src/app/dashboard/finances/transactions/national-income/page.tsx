@@ -1,6 +1,7 @@
 // src/app/dashboard/finances/transactions/national-income/page.tsx
 "use client";
 
+import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
@@ -8,26 +9,37 @@ import { mockTransactions } from "@/lib/mockData";
 import { TransactionTable } from "@/components/shared/TransactionTable";
 import { DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 
 export default function NationalIncomeTransactionsPage() {
-  const nationalIncomeTransactions = mockTransactions.filter(
-    t => t.transactionType === 'income_source' && t.recipientEntityType === 'national'
-  );
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
 
-  const totalNationalIncome = nationalIncomeTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const allNationalIncomeTransactions = useMemo(() => {
+    return mockTransactions.filter(
+      t => t.transactionType === 'income_source' && t.recipientEntityType === 'national'
+    ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, []);
+
+  const filteredTransactions = useMemo(() => {
+    return applyDateFilter(allNationalIncomeTransactions, dateFilter);
+  }, [allNationalIncomeTransactions, dateFilter]);
+
+  const totalNationalIncome = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
       <PageHeader
         title="National Income Transactions"
-        description={`Review all income received by AYLF National Coordination. Total: $${totalNationalIncome.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+        description={`Review all income received by AYLF National Coordination. Total for period: $${totalNationalIncome.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}. Filter: ${dateFilter.display}`}
         icon={DollarSign}
       />
+      <div className="mb-4">
+        <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey} />
+      </div>
       <Card>
         <CardContent className="pt-6">
           <TransactionTable
-            transactions={nationalIncomeTransactions}
-            // title="All National Income"
+            transactions={filteredTransactions}
           />
         </CardContent>
       </Card>

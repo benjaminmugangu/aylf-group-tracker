@@ -15,9 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Member } from "@/lib/types";
+import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 
 export default function MembersPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
   const [typeFilter, setTypeFilter] = useState<Record<Member["type"], boolean>>({
     student: true,
     "non-student": true,
@@ -26,8 +28,13 @@ export default function MembersPage() {
   const getSiteName = (siteId?: string) => siteId ? mockSites.find(s => s.id === siteId)?.name || "N/A" : "N/A";
   const getSmallGroupName = (smallGroupId?: string) => smallGroupId ? mockSmallGroups.find(sg => sg.id === smallGroupId)?.name || "N/A" : "N/A";
   
-  const filteredMembers = useMemo(() => {
-    return mockMembers.filter(member => {
+  const dateFilteredMembers = useMemo(() => {
+    // Ensure joinDate is used for filtering members
+    return applyDateFilter(mockMembers.map(m => ({...m, date: m.joinDate})), dateFilter) as Member[];
+  }, [dateFilter]);
+  
+  const fullyFilteredMembers = useMemo(() => {
+    return dateFilteredMembers.filter(member => {
       const siteName = getSiteName(member.siteId).toLowerCase();
       const smallGroupName = getSmallGroupName(member.smallGroupId).toLowerCase();
       const search = searchTerm.toLowerCase();
@@ -38,14 +45,14 @@ export default function MembersPage() {
       const matchesType = typeFilter[member.type];
       return matchesSearch && matchesType;
     });
-  }, [searchTerm, typeFilter]);
+  }, [searchTerm, typeFilter, dateFilteredMembers]);
 
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title="Member Management"
-        description="View and manage all members across sites and small groups."
+        description={`View and manage members. Filter: ${dateFilter.display}`}
         icon={Users}
         actions={
           <Button>
@@ -55,25 +62,26 @@ export default function MembersPage() {
       />
       
       <div className="mb-6">
-        <MemberStatsChart members={mockMembers} title="Members Overview by Type" description="Distribution of members by student and non-student status." />
+        <MemberStatsChart members={fullyFilteredMembers} title="Members Overview by Type" description={`Distribution of members for the selected period by student and non-student status.`} />
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>All Members</CardTitle>
-          <CardDescription>A comprehensive list of all registered members. Use filters to narrow down your search.</CardDescription>
+          <CardDescription>A comprehensive list of registered members. Use filters to narrow down your search.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
             <div className="relative w-full sm:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                placeholder="Search members by name, site, or group..."
+                placeholder="Search members..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
               />
             </div>
+            <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full sm:w-auto">
@@ -108,7 +116,7 @@ export default function MembersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMembers.length > 0 ? filteredMembers.map(member => (
+                {fullyFilteredMembers.length > 0 ? fullyFilteredMembers.map(member => (
                   <TableRow key={member.id}>
                     <TableCell className="font-medium">{member.name}</TableCell>
                     <TableCell>

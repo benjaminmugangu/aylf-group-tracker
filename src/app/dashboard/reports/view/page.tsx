@@ -25,11 +25,14 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
+
 
 type ViewMode = "table" | "grid";
 
 export default function ViewReportsPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
   const [levelFilter, setLevelFilter] = useState<Report["level"] | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -42,15 +45,20 @@ export default function ViewReportsPage() {
     else setViewMode("table");
   }, [isMobile]);
 
-  const filteredReports = useMemo(() => {
-    return mockReports.filter(report => {
+  const dateFilteredReports = useMemo(() => {
+    // Ensure submissionDate is used for filtering reports
+    return applyDateFilter(mockReports.map(r => ({...r, date: r.submissionDate})), dateFilter) as Report[];
+  }, [dateFilter]);
+
+  const fullyFilteredReports = useMemo(() => {
+    return dateFilteredReports.filter(report => {
       const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (report.submittedBy && report.submittedBy.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesLevel = levelFilter === "all" || report.level === levelFilter;
       return matchesSearch && matchesLevel;
     });
-  }, [searchTerm, levelFilter]);
+  }, [searchTerm, levelFilter, dateFilteredReports]);
 
   const handleViewDetails = (reportId: string) => {
     const report = mockReports.find(r => r.id === reportId);
@@ -64,27 +72,28 @@ export default function ViewReportsPage() {
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title="View Submitted Reports"
-        description="Browse and review reports from all levels of the organization."
+        description={`Browse reports. Filter: ${dateFilter.display}`}
         icon={FileSearch}
       />
       
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Report Explorer</CardTitle>
-          <CardDescription>Filter and search through submitted reports. Toggle between table and grid view.</CardDescription>
+          <CardDescription>Filter and search reports. Toggle between table and grid view.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             <div className="relative w-full md:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                placeholder="Search reports by title, content, or submitter..."
+                placeholder="Search reports..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
               />
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+              <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey} />
               <Select value={levelFilter} onValueChange={(value) => setLevelFilter(value as Report["level"] | "all")}>
                 <SelectTrigger className="w-full md:w-[180px]">
                   <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -111,11 +120,11 @@ export default function ViewReportsPage() {
           </div>
 
           {viewMode === "table" && !isMobile ? (
-            <ReportTable reports={filteredReports} onViewDetails={handleViewDetails} />
+            <ReportTable reports={fullyFilteredReports} onViewDetails={handleViewDetails} />
           ) : (
-            filteredReports.length > 0 ? (
+            fullyFilteredReports.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredReports.map(report => (
+                {fullyFilteredReports.map(report => (
                   <ReportCard key={report.id} report={report} onViewDetails={handleViewDetails} />
                 ))}
               </div>
@@ -135,7 +144,7 @@ export default function ViewReportsPage() {
                 Level: {selectedReport.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} | Submitted by: {selectedReport.submittedBy} on {new Date(selectedReport.submissionDate).toLocaleDateString()}
               </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="flex-grow pr-6 -mr-6"> {/* Added pr and -mr for scrollbar visibility */}
+            <ScrollArea className="flex-grow pr-6 -mr-6"> 
               <div className="py-4 space-y-4">
                 {selectedReport.images && selectedReport.images.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">

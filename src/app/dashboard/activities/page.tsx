@@ -9,15 +9,17 @@ import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Activity as ActivityIcon, ListFilter, Search } from "lucide-react"; // Renamed to avoid conflict
+import { Activity as ActivityIcon, ListFilter, Search } from "lucide-react"; 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import React, { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
+import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 
 export default function ActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
   const [statusFilter, setStatusFilter] = useState<Record<Activity["status"], boolean>>({
     planned: true,
     executed: true,
@@ -29,21 +31,25 @@ export default function ActivitiesPage() {
     small_group: true,
   });
 
-  const filteredActivities = useMemo(() => {
-    return mockActivities.filter(activity => {
+  const dateFilteredActivities = useMemo(() => {
+    return applyDateFilter(mockActivities, dateFilter);
+  }, [dateFilter]);
+
+  const fullyFilteredActivities = useMemo(() => {
+    return dateFilteredActivities.filter(activity => {
       const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             activity.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter[activity.status];
       const matchesLevel = levelFilter[activity.level];
       return matchesSearch && matchesStatus && matchesLevel;
     });
-  }, [searchTerm, statusFilter, levelFilter]);
+  }, [searchTerm, statusFilter, levelFilter, dateFilteredActivities]);
 
   const getStatusBadgeVariant = (status: Activity["status"]) => {
     switch (status) {
-      case "executed": return "default"; // bg-primary (teal)
-      case "planned": return "secondary"; // bg-secondary (gray)
-      case "cancelled": return "destructive"; // bg-destructive (red)
+      case "executed": return "default"; 
+      case "planned": return "secondary"; 
+      case "cancelled": return "destructive"; 
       default: return "outline";
     }
   };
@@ -62,30 +68,31 @@ export default function ActivitiesPage() {
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title="Activity Management"
-        description="View and manage all small group and site activities."
+        description={`View and manage activities. Filter: ${dateFilter.display}`}
         icon={ActivityIcon}
       />
       
       <div className="mb-6">
-        <ActivityChart activities={mockActivities} title="Activities Overview by Status" description="Summary of all activities based on their status." />
+        <ActivityChart activities={fullyFilteredActivities} title="Activities Overview by Status" description={`Summary of activities for the selected period based on their status.`} />
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>All Activities</CardTitle>
-          <CardDescription>A comprehensive list of all recorded activities. Use filters to narrow down your search.</CardDescription>
+          <CardDescription>A comprehensive list of recorded activities. Use filters to narrow down your search.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
             <div className="relative w-full sm:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                placeholder="Search activities by name or description..."
+                placeholder="Search activities..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
               />
             </div>
+            <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full sm:w-auto">
@@ -131,7 +138,7 @@ export default function ActivitiesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActivities.length > 0 ? filteredActivities.map(activity => (
+                {fullyFilteredActivities.length > 0 ? fullyFilteredActivities.map(activity => (
                   <TableRow key={activity.id}>
                     <TableCell className="font-medium">{activity.name}</TableCell>
                     <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
