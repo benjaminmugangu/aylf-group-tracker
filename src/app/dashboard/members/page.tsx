@@ -9,13 +9,14 @@ import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Users, UserPlus, ListFilter, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge"; 
+import { Users, UserPlus, ListFilter, Search, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Member } from "@/lib/types";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
+import Link from "next/link";
 
 export default function MembersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -113,6 +114,7 @@ export default function MembersPage() {
                   <TableHead>Site</TableHead>
                   <TableHead>Small Group</TableHead>
                   <TableHead>Join Date</TableHead>
+                  <TableHead className="text-right w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -127,10 +129,17 @@ export default function MembersPage() {
                     <TableCell>{getSiteName(member.siteId)}</TableCell>
                     <TableCell>{getSmallGroupName(member.smallGroupId)}</TableCell>
                     <TableCell>{new Date(member.joinDate).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/dashboard/members/${member.id}`} passHref>
+                        <Button variant="ghost" size="icon" title="View Details">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       No members found matching your criteria.
                     </TableCell>
                   </TableRow>

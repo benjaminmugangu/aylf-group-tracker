@@ -8,14 +8,15 @@ import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Activity as ActivityIcon, ListFilter, Search } from "lucide-react"; 
+import { Badge } from "@/components/ui/badge"; 
+import { Activity as ActivityIcon, ListFilter, Search, Eye } from "lucide-react"; 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import React, { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
+import Link from "next/link";
 
 export default function ActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -135,6 +136,7 @@ export default function ActivitiesPage() {
                   <TableHead>Level</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Participants</TableHead>
+                  <TableHead className="text-right w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -152,11 +154,18 @@ export default function ActivitiesPage() {
                         {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{activity.participantsCount || "N/A"}</TableCell>
+                    <TableCell className="text-right">{activity.participantsCount !== undefined ? activity.participantsCount : "N/A"}</TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/dashboard/activities/${activity.id}`} passHref>
+                        <Button variant="ghost" size="icon" title="View Details">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       No activities found matching your criteria.
                     </TableCell>
                   </TableRow>
