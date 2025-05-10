@@ -6,6 +6,7 @@ import type { Role } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button"; // Added import for Button
 
 interface RoleBasedGuardProps {
   allowedRoles: Role[];

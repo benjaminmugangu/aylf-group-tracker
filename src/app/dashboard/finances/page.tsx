@@ -65,7 +65,7 @@ export default function FinancesPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Budget Utilization</CardTitle>
-            <CardDescription>Overview of budget allocation and spending by category.</CardHeader>
+            <CardDescription>Overview of budget allocation and spending by category.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {Object.entries(mockFinancialData.budgetUtilization).map(([category, data]) => (
