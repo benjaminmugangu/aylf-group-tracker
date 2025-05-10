@@ -1,0 +1,199 @@
+// src/app/dashboard/sites/[siteId]/page.tsx
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
+import { ROLES } from "@/lib/constants";
+import { mockSites, mockSmallGroups, mockUsers, mockMembers } from "@/lib/mockData";
+import type { Site, SmallGroup as SmallGroupType } from "@/lib/types";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Building, Users, UserCircle, Eye, Info, Edit, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface SmallGroupWithCounts extends SmallGroupType {
+  membersCount: number;
+}
+
+export default function SiteDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const siteId = params.siteId as string;
+
+  const [site, setSite] = useState<Site | null>(null);
+  const [smallGroups, setSmallGroups] = useState<SmallGroupWithCounts[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const foundSite = mockSites.find(s => s.id === siteId);
+    if (foundSite) {
+      setSite(foundSite);
+      const siteSmallGroups = mockSmallGroups
+        .filter(sg => sg.siteId === siteId)
+        .map(sg => ({
+          ...sg,
+          membersCount: mockMembers.filter(mem => mem.smallGroupId === sg.id).length,
+        }));
+      setSmallGroups(siteSmallGroups);
+    }
+    setIsLoading(false);
+  }, [siteId]);
+
+  const getLeaderName = (leaderId?: string) => {
+    if (!leaderId) return "N/A";
+    const leader = mockUsers.find(user => user.id === leaderId);
+    return leader ? leader.name : "N/A";
+  };
+
+  const getLeaderInitials = (name: string) => {
+    if (!name || name === "N/A") return "N/A";
+    const names = name.split(' ');
+    if (names.length > 1 && names[0] && names[names.length -1]) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  if (isLoading) {
+    return (
+      <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
+        <PageHeader title="Loading Site Details..." icon={Building} />
+        <Card>
+          <CardHeader><Skeleton className="h-8 w-3/4" /></CardHeader>
+          <CardContent><Skeleton className="h-40 w-full" /></CardContent>
+        </Card>
+      </RoleBasedGuard>
+    );
+  }
+
+  if (!site) {
+    return (
+      <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
+        <PageHeader title="Site Not Found" icon={Info} />
+        <Card>
+          <CardContent className="pt-6">
+            <p>The site you are looking for does not exist or could not be found.</p>
+            <Button onClick={() => router.push('/dashboard/sites')} className="mt-4">Back to Sites</Button>
+          </CardContent>
+        </Card>
+      </RoleBasedGuard>
+    );
+  }
+  
+  const siteCoordinator = mockUsers.find(user => user.id === site.coordinatorId);
+
+  return (
+    <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
+      <PageHeader title={site.name} description={`Details for site: ${site.name}`} icon={Building} />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card className="md:col-span-1 shadow-lg">
+          <CardHeader>
+            <CardTitle>Site Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center">
+              <UserCircle className="mr-3 h-5 w-5 text-muted-foreground" />
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Coordinator</span>
+                <p className="text-foreground">{siteCoordinator?.name || "N/A"}</p>
+              </div>
+            </div>
+             <div className="flex items-center">
+              <Users className="mr-3 h-5 w-5 text-muted-foreground" />
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Total Small Groups</span>
+                <p className="text-foreground">{smallGroups.length}</p>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <Users className="mr-3 h-5 w-5 text-muted-foreground" />
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Total Members</span>
+                <p className="text-foreground">{smallGroups.reduce((acc, sg) => acc + sg.membersCount, 0)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2 shadow-lg">
+          <CardHeader>
+            <CardTitle>Quick Stats (Illustrative)</CardTitle>
+            <CardDescription>Key metrics for this site.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <p className="text-2xl font-bold text-primary">{Math.floor(Math.random() * 20) + 5}</p>
+              <p className="text-sm text-muted-foreground">Activities Last Month</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-primary">{Math.floor(Math.random() * 10) + 2}%</p>
+              <p className="text-sm text-muted-foreground">Member Growth (QTD)</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Small Groups in {site.name}</CardTitle>
+          <CardDescription>List of small groups operating under this site.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {smallGroups.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Small Group Name</TableHead>
+                    <TableHead>Leader</TableHead>
+                    <TableHead>Members</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {smallGroups.map(sg => (
+                    <TableRow key={sg.id}>
+                      <TableCell className="font-medium">{sg.name}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                           <Avatar className="h-8 w-8">
+                            <AvatarImage src={`https://avatar.vercel.sh/${getLeaderName(sg.leaderId)}.png`} alt={getLeaderName(sg.leaderId)} data-ai-hint="leader avatar" />
+                            <AvatarFallback>{getLeaderInitials(getLeaderName(sg.leaderId))}</AvatarFallback>
+                          </Avatar>
+                          <span>{getLeaderName(sg.leaderId)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{sg.membersCount}</TableCell>
+                      <TableCell className="text-right">
+                        {/* Future: Link to small group detail page */}
+                        <Button variant="ghost" size="icon" title="View Small Group Details (Future)">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                         <Button variant="ghost" size="icon" title="Edit Small Group (Future)">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                         <Button variant="ghost" size="icon" title="Delete Small Group (Future)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">No small groups found for this site.</p>
+          )}
+        </CardContent>
+      </Card>
+      <Button onClick={() => router.push('/dashboard/sites')} className="mt-6">Back to Sites List</Button>
+    </RoleBasedGuard>
+  );
+}

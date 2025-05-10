@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Building, PlusCircle, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockSites, mockUsers } from "@/lib/mockData";
+import { mockSites, mockUsers, mockSmallGroups, mockMembers } from "@/lib/mockData";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,8 +22,10 @@ function SitePerformanceAnalytics() {
 
   useEffect(() => {
     // These will only run on the client, after initial hydration
-    setTotalSiteMembers((Math.random() * 200 + 100).toFixed(0));
-    setAvgActivities((Math.random() * 50 + 20).toFixed(0));
+    // Calculate total members across all sites using mockMembers for better accuracy
+    const totalMembers = mockMembers.filter(member => member.siteId && mockSites.some(site => site.id === member.siteId)).length;
+    setTotalSiteMembers(totalMembers.toString());
+    setAvgActivities((Math.random() * 50 + 20).toFixed(0)); // Keep average activities as random for now
   }, []); // Empty dependency array ensures this runs once on mount
 
   return (
@@ -37,7 +40,7 @@ function SitePerformanceAnalytics() {
             ) : (
               <Skeleton className="h-7 w-12 mx-auto mb-1" />
             )}
-            <p className="text-sm text-muted-foreground">Total Site Members (Mock)</p>
+            <p className="text-sm text-muted-foreground">Total Site Members</p>
         </div>
           <div className="border p-4 rounded-lg bg-secondary/30 text-center">
             {avgActivities !== null ? (
@@ -59,8 +62,8 @@ export default function ManageSitesPage() {
     setSitesWithCounts(
       mockSites.map(site => ({
         ...site,
-        membersCount: Math.floor(Math.random() * 50) + 20,
-        smallGroupsCount: Math.floor(Math.random() * 5) + 1,
+        membersCount: mockMembers.filter(member => member.siteId === site.id).length,
+        smallGroupsCount: mockSmallGroups.filter(sg => sg.siteId === site.id).length,
       }))
     );
   }, []);
@@ -71,8 +74,9 @@ export default function ManageSitesPage() {
   };
   
   const getCoordinatorInitials = (name: string) => {
+    if (!name || name === "N/A") return "N/A";
     const names = name.split(' ');
-    if (names.length > 1) {
+    if (names.length > 1 && names[0] && names[names.length -1]) {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
@@ -103,8 +107,8 @@ export default function ManageSitesPage() {
                 <TableRow>
                   <TableHead>Site Name</TableHead>
                   <TableHead>Coordinator</TableHead>
-                  <TableHead>Total Members (Mock)</TableHead>
-                  <TableHead>Active Small Groups (Mock)</TableHead>
+                  <TableHead>Total Members</TableHead>
+                  <TableHead>Active Small Groups</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -124,6 +128,11 @@ export default function ManageSitesPage() {
                     <TableCell>{site.membersCount}</TableCell>
                     <TableCell>{site.smallGroupsCount}</TableCell>
                     <TableCell className="text-right">
+                      <Link href={`/dashboard/sites/${site.id}`} passHref>
+                        <Button variant="ghost" size="icon" title="View Details">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
                       <Button variant="ghost" size="icon" title="Edit Site">
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -133,8 +142,8 @@ export default function ManageSitesPage() {
                     </TableCell>
                   </TableRow>
                 )) : (
-                  mockSites.map(site => ( 
-                    <TableRow key={site.id + "-skeleton"}>
+                  [...Array(5)].map((_, index) => ( 
+                    <TableRow key={`skeleton-${index}`}>
                       <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -146,6 +155,7 @@ export default function ManageSitesPage() {
                       <TableCell><Skeleton className="h-5 w-10" /></TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          <Skeleton className="h-8 w-8" />
                           <Skeleton className="h-8 w-8" />
                           <Skeleton className="h-8 w-8" />
                         </div>
@@ -161,11 +171,10 @@ export default function ManageSitesPage() {
 
       <Card className="mt-8 shadow-lg">
         <CardHeader>
-            <CardTitle>Site Performance Analytics (Placeholder)</CardTitle>
-            <CardDescription>Visualizations and metrics for site engagement, growth, and activity levels will be displayed here.</CardDescription>
+            <CardTitle>Site Performance Analytics</CardTitle>
+            <CardDescription>Overall metrics for site engagement, growth, and activity levels.</CardDescription>
         </CardHeader>
         <CardContent>
-            <p className="text-muted-foreground">Advanced site analytics are under development. Stay tuned for interactive charts and performance dashboards.</p>
             <SitePerformanceAnalytics />
         </CardContent>
       </Card>
@@ -173,4 +182,3 @@ export default function ManageSitesPage() {
     </RoleBasedGuard>
   );
 }
-

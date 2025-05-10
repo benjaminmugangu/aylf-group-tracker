@@ -31,18 +31,18 @@ export const NAVIGATION_LINKS: NavItem[] = [
     label: "Reports",
     icon: FileText,
     allowedRoles: [ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER],
-    href: "/dashboard/reports",
+    href: "/dashboard/reports", // Main href for parent item, can be first child's href or a dedicated overview
     children: [
       {
         href: "/dashboard/reports/submit",
         label: "Submit Report",
-        icon: FileText, // Lucide does not have specific 'submit' icon, using parent
+        icon: FileText, 
         allowedRoles: [ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER],
       },
       {
         href: "/dashboard/reports/view",
         label: "View Reports",
-        icon: FileText, // Lucide does not have specific 'view' icon, using parent
+        icon: FileText, 
         allowedRoles: [ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER],
       },
     ],
@@ -51,13 +51,13 @@ export const NAVIGATION_LINKS: NavItem[] = [
     href: "/dashboard/suggestions",
     label: "AI Suggestions",
     icon: Lightbulb,
-    allowedRoles: [ROLES.NATIONAL_COORDINATOR], // Typically an admin/national feature
+    allowedRoles: [ROLES.NATIONAL_COORDINATOR], 
   },
   {
     href: "/dashboard/sites",
-    label: "Manage Sites",
+    label: "Manage Sites", // This will now list sites, and clicking a site goes to its details (including SGs)
     icon: Building,
-    allowedRoles: [ROLES.NATIONAL_COORDINATOR],
+    allowedRoles: [ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR], // Site coordinators might see their own site details
   },
   {
     href: "/dashboard/users",
@@ -68,7 +68,7 @@ export const NAVIGATION_LINKS: NavItem[] = [
    {
     href: "/dashboard/finances",
     label: "Finances",
-    icon: Briefcase, // Or other suitable icon like CreditCard
+    icon: Briefcase, 
     allowedRoles: [ROLES.NATIONAL_COORDINATOR],
   },
 ];
