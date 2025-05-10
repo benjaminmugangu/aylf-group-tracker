@@ -62,6 +62,8 @@ export interface NavItem {
   icon: React.ElementType;
   allowedRoles: Role[];
   children?: NavItem[];
+  filterKey?: string; // For filtering views, e.g. activities by status
+  filterValue?: string;
 }
 
 export interface StatCardData {
@@ -69,6 +71,28 @@ export interface StatCardData {
   value: string | number;
   icon: React.ElementType;
   description?: string;
-  href?: string; // Added href for clickability
+  href?: string;
+  filterKey?: string; 
+  filterValue?: string;
 }
 
+export interface Transaction {
+  id: string;
+  date: string; // ISO date string
+  amount: number; // Always positive
+  description: string;
+  transactionType: 'transfer' | 'expense' | 'income_source'; // 'transfer' between internal entities, 'expense' to external, 'income_source' from external
+  
+  senderEntityType: 'national' | 'site' | 'small_group' | 'external_donor';
+  senderEntityId: string; 
+  senderEntityName?: string; 
+
+  recipientEntityType: 'national' | 'site' | 'small_group' | 'vendor' | 'beneficiary' | 'other';
+  recipientEntityId: string; 
+  recipientEntityName?: string;
+
+  // For easier filtering and context
+  level: 'national' | 'site' | 'small_group'; // The level this transaction is primarily associated with or initiated from
+  relatedSiteId?: string; // If related to a specific site (either sender or recipient)
+  relatedSmallGroupId?: string; // If related to a specific small group (either sender or recipient)
+}

@@ -1,5 +1,5 @@
 // src/lib/mockData.ts
-import type { User, Activity, Member, Report, Site, SmallGroup } from "@/lib/types";
+import type { User, Activity, Member, Report, Site, SmallGroup, Transaction } from "@/lib/types";
 import { ROLES } from "@/lib/constants";
 
 export const mockUsers: User[] = [
@@ -18,11 +18,14 @@ export const mockUsers: User[] = [
   { id: "user_sg_kalemie_alumni", name: "Leader Kalemie Alumni", email: "kalemie.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kalemie", smallGroupId: "sg_kalemie_alumni" },
   { id: "user_site_kinshasa", name: "Coordinator Kinshasa", email: "kinshasa@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kinshasa" },
   { id: "user_sg_kinshasa_alumni", name: "Leader Kinshasa Alumni", email: "kinshasa.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kinshasa", smallGroupId: "sg_kinshasa_alumni" },
+  { id: "user_site_kisangani", name: "Coordinator Kisangani", email: "kisangani@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kisangani"},
+  { id: "user_sg_kisangani_alumni", name: "Leader Kisangani Alumni", email: "kisangani.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kisangani", smallGroupId: "sg_kisangani_alumni" },
+  { id: "user_site_kolwezi", name: "Coordinator Kolwezi", email: "kolwezi@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kolwezi"},
+  { id: "user_sg_kolwezi_alumni", name: "Leader Kolwezi Alumni", email: "kolwezi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kolwezi", smallGroupId: "sg_kolwezi_alumni" },
   { id: "user_site_lubumbashi", name: "Coordinator Lubumbashi", email: "lubumbashi@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_lubumbashi" },
   { id: "user_sg_lubumbashi_alumni", name: "Leader Lubumbashi Alumni", email: "lubumbashi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_lubumbashi", smallGroupId: "sg_lubumbashi_alumni" },
   { id: "user_site_uvira", name: "Coordinator Uvira", email: "uvira@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_uvira" },
   { id: "user_sg_uvira_alumni", name: "Leader Uvira Alumni", email: "uvira.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_uvira", smallGroupId: "sg_uvira_alumni" },
-  // Add more users if needed for other small groups
 ];
 
 export const mockSites: Site[] = [
@@ -33,6 +36,8 @@ export const mockSites: Site[] = [
   { id: "site_goma", name: "Goma", coordinatorId: "user_site_goma" },
   { id: "site_kalemie", name: "Kalemie", coordinatorId: "user_site_kalemie" },
   { id: "site_kinshasa", name: "Kinshasa", coordinatorId: "user_site_kinshasa" },
+  { id: "site_kisangani", name: "Kisangani", coordinatorId: "user_site_kisangani"},
+  { id: "site_kolwezi", name: "Kolwezi", coordinatorId: "user_site_kolwezi"},
   { id: "site_lubumbashi", name: "Lubumbashi", coordinatorId: "user_site_lubumbashi" },
   { id: "site_uvira", name: "Uvira", coordinatorId: "user_site_uvira" },
 ];
@@ -77,6 +82,13 @@ export const mockSmallGroups: SmallGroup[] = [
   { id: "sg_kinshasa_alumni", name: "ALUMNI", siteId: "site_kinshasa", leaderId: "user_sg_kinshasa_alumni" },
   { id: "sg_kinshasa_unikin", name: "UNIKIN", siteId: "site_kinshasa", leaderId: "user_site_kinshasa" },
   { id: "sg_kinshasa_unimkin", name: "UNIM/Kin", siteId: "site_kinshasa", leaderId: "user_site_kinshasa" },
+  // Kisangani
+  { id: "sg_kisangani_alumni", name: "ALUMNI", siteId: "site_kisangani", leaderId: "user_sg_kisangani_alumni" },
+  { id: "sg_kisangani_unikis", name: "UNIKIS", siteId: "site_kisangani", leaderId: "user_site_kisangani"},
+  { id: "sg_kisangani_upc", name: "UPC", siteId: "site_kisangani", leaderId: "user_site_kisangani"},
+  // Kolwezi
+  { id: "sg_kolwezi_alumni", name: "ALUMNI", siteId: "site_kolwezi", leaderId: "user_sg_kolwezi_alumni" },
+  { id: "sg_kolwezi_unikol", name: "UNIKOL", siteId: "site_kolwezi", leaderId: "user_site_kolwezi" },
   // Lubumbashi
   { id: "sg_lubumbashi_alumni", name: "ALUMNI", siteId: "site_lubumbashi", leaderId: "user_sg_lubumbashi_alumni" },
   { id: "sg_lubumbashi_unilu", name: "UNILU", siteId: "site_lubumbashi", leaderId: "user_site_lubumbashi" },
@@ -117,7 +129,7 @@ export const mockReports: Report[] = [
     submissionDate: "2024-07-01", 
     level: "national", 
     content: "The Q2 leadership workshop was a success with high engagement.", 
-    images: [{ name: "workshop_group.jpg", url: "https://picsum.photos/seed/workshop/400/300" }],
+    images: [{ name: "workshop_group.jpg", url: "https://picsum.photos/seed/workshop1/400/300" }],
     financialSummary: "Total expenses: $500. Income from registration: $200."
   },
   { 
@@ -128,7 +140,10 @@ export const mockReports: Report[] = [
     level: "site", 
     siteId: "site_beni", 
     content: "Reached 50 families, distributed food packs. Positive feedback received.",
-    images: [{ name: "outreach_team.jpg", url: "https://picsum.photos/seed/outreach/400/300" }, { name: "beneficiaries.jpg", url: "https://picsum.photos/seed/beneficiaries/400/300" }],
+    images: [
+        { name: "outreach_team.jpg", url: "https://picsum.photos/seed/outreach1/400/300" }, 
+        { name: "beneficiaries.jpg", url: "https://picsum.photos/seed/beneficiaries1/400/300" }
+    ],
     financialSummary: "Donations received: $300. Expenses for supplies: $250."
   },
   { 
@@ -139,6 +154,7 @@ export const mockReports: Report[] = [
     level: "small_group", 
     smallGroupId: "sg_beni_alumni", 
     content: "Completed first 5 chapters. Rich discussions on purpose and identity.",
+    images: [{ name: "book_study.jpg", url: "https://picsum.photos/seed/bookstudy/400/300" }],
     financialSummary: "No financial activity this period."
   },
 ];
@@ -170,3 +186,30 @@ Group Preferences (Optional):
 - Location: Primarily urban and peri-urban settings in Beni, Bukavu, Goma.
 `;
 
+export const mockTransactions: Transaction[] = [
+  // National Income
+  { id: 'txn_nat_inc_1', date: '2024-06-01', amount: 10000, description: 'Grant from XYZ Foundation', transactionType: 'income_source', senderEntityType: 'external_donor', senderEntityId: 'donor_xyz', senderEntityName: 'XYZ Foundation', recipientEntityType: 'national', recipientEntityId: 'aylf_national', recipientEntityName: 'AYLF National', level: 'national' },
+  { id: 'txn_nat_inc_2', date: '2024-06-15', amount: 5000, description: 'General Donations Q2', transactionType: 'income_source', senderEntityType: 'external_donor', senderEntityId: 'donors_general', senderEntityName: 'Various Donors', recipientEntityType: 'national', recipientEntityId: 'aylf_national', recipientEntityName: 'AYLF National', level: 'national' },
+  
+  // National to Site Transfers
+  { id: 'txn_nat_site_beni_1', date: '2024-07-01', amount: 2000, description: 'Q3 Budget for Site Beni', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'site', recipientEntityId: 'site_beni', recipientEntityName: 'Site Beni', level: 'national', relatedSiteId: 'site_beni' },
+  { id: 'txn_nat_site_bukavu_1', date: '2024-07-01', amount: 1800, description: 'Q3 Budget for Site Bukavu', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'site', recipientEntityId: 'site_bukavu', recipientEntityName: 'Site Bukavu', level: 'national', relatedSiteId: 'site_bukavu' },
+  { id: 'txn_nat_site_goma_1', date: '2024-07-02', amount: 2200, description: 'Special Project Funding Goma', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'site', recipientEntityId: 'site_goma', recipientEntityName: 'Site Goma', level: 'national', relatedSiteId: 'site_goma' },
+
+  // National Expenses
+  { id: 'txn_nat_exp_1', date: '2024-07-05', amount: 1200, description: 'National Conference Venue Booking', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'vendor', recipientEntityId: 'venue_conf_center', recipientEntityName: 'Capital Conference Center', level: 'national' },
+  { id: 'txn_nat_exp_2', date: '2024-07-10', amount: 300, description: 'Website Hosting Fees', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'vendor', recipientEntityId: 'host_co_123', recipientEntityName: 'Web Services Inc.', level: 'national' },
+  
+  // Site Beni to Small Group Transfers
+  { id: 'txn_site_beni_sg_alumni_1', date: '2024-07-10', amount: 150, description: 'Activity support for Alumni SG', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', senderEntityName: 'Site Beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_alumni', recipientEntityName: 'Beni Alumni SG', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_alumni' },
+  { id: 'txn_site_beni_sg_isc_1', date: '2024-07-11', amount: 100, description: 'Materials for ISC SG workshop', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', senderEntityName: 'Site Beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_isc', recipientEntityName: 'Beni ISC SG', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_isc' },
+
+  // Site Beni Expenses
+  { id: 'txn_site_beni_exp_1', date: '2024-07-15', amount: 80, description: 'Printing for Site Workshop', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_beni', senderEntityName: 'Site Beni', recipientEntityType: 'vendor', recipientEntityId: 'beni_print_shop', recipientEntityName: 'Beni Print Services', level: 'site', relatedSiteId: 'site_beni' },
+
+  // Site Bukavu to Small Group Transfers
+  { id: 'txn_site_bukavu_sg_uea_1', date: '2024-07-12', amount: 200, description: 'UEA SG Outreach Event', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_bukavu', senderEntityName: 'Site Bukavu', recipientEntityType: 'small_group', recipientEntityId: 'sg_bukavu_uea', recipientEntityName: 'Bukavu UEA SG', level: 'site', relatedSiteId: 'site_bukavu', relatedSmallGroupId: 'sg_bukavu_uea' },
+  
+  // Site Goma Expenses
+  { id: 'txn_site_goma_exp_1', date: '2024-07-18', amount: 120, description: 'Refreshments for Goma Leaders Meeting', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_goma', senderEntityName: 'Site Goma', recipientEntityType: 'vendor', recipientEntityId: 'goma_catering_serv', recipientEntityName: 'Goma Catering', level: 'site', relatedSiteId: 'site_goma' },
+];
