@@ -6,12 +6,12 @@ import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
-import { mockMembers, mockSites, mockSmallGroups, mockActivities, mockReports } from "@/lib/mockData";
-import type { Member } from "@/lib/types"; // Removed Activity, ReportType as they are not directly used for type defs here
+import { mockMembers, mockSites, mockSmallGroups, mockActivities } from "@/lib/mockData"; // Removed mockReports
+import type { Member } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, CalendarDays, Users as UsersIcon, University, Mail, Phone, Activity as ActivityIcon, FileText, Link as LinkIcon, Info } from "lucide-react"; // Renamed Users to UsersIcon to avoid conflict
+import { User, CalendarDays, Users as UsersIcon, University, Mail, Phone, Activity as ActivityIcon, Link as LinkIcon, Info } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -43,8 +43,6 @@ export default function MemberDetailPage() {
     (activity.level === "site" && activity.siteId === member?.siteId) ||
     activity.level === "national" // All members can potentially attend national activities
   ).slice(0, 3); // Show a few
-
-  const relatedReports = mockReports.filter(report => report.submittedBy === member?.id).slice(0,3);
 
 
   if (!member) {
@@ -147,30 +145,6 @@ export default function MemberDetailPage() {
             </CardContent>
           </Card>
           
-           <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center"><FileText className="mr-2 h-5 w-5 text-primary"/> Reports Submitted (Illustrative)</CardTitle>
-               <CardDescription>Reports submitted by this member.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {relatedReports.length > 0 ? (
-                <ul className="space-y-3">
-                  {relatedReports.map(report => (
-                    <li key={report.id} className="text-sm border-b pb-2 last:border-b-0 last:pb-0">
-                      <Link href={`/dashboard/reports/view#${report.id}`} passHref>
-                         <Button variant="link" className="p-0 h-auto font-medium text-primary hover:underline flex items-center">
-                            {report.title} <LinkIcon className="ml-1 h-3 w-3"/>
-                         </Button>
-                      </Link>
-                      <p className="text-xs text-muted-foreground mt-0.5">Submitted: {new Date(report.submissionDate).toLocaleDateString()}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">This member has not submitted any reports.</p>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
       <Button onClick={() => router.back()} className="mt-6">Go Back</Button>
