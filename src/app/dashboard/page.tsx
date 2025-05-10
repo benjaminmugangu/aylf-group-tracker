@@ -75,24 +75,75 @@ export default function NationalCoordinatorDashboard() {
       />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
-        <StatCard title="Total Activities" value={totalActivities} icon={Activity} description={`${executedActivities} executed, ${plannedActivities} planned`} />
-        <StatCard title="Total Members" value={totalMembers} icon={Users} description={`${studentMembers} students, ${nonStudentMembers} non-students`} />
+        <StatCard 
+          title="Total Activities" 
+          value={totalActivities} 
+          icon={Activity} 
+          description={`${executedActivities} executed, ${plannedActivities} planned`}
+          href="/dashboard/activities" 
+        />
+        <StatCard 
+          title="Total Members" 
+          value={totalMembers} 
+          icon={Users} 
+          description={`${studentMembers} students, ${nonStudentMembers} non-students`}
+          href="/dashboard/members"
+        />
         {currentUser?.role === ROLES.NATIONAL_COORDINATOR && (
           <>
-            <StatCard title="Submitted Reports" value={totalReports} icon={FileText} description="Across all levels" />
-            <StatCard title="Total Sites" value={totalSites} icon={Building} description="Managed sites" />
-            <StatCard title="Total Small Groups" value={totalSmallGroups} icon={UsersRound} description="Active small groups" />
-            <StatCard title="Net Balance" value={`$${netBalance.toLocaleString()}`} icon={Briefcase} description={`Income: $${totalIncome.toLocaleString()}, Expenses: $${totalExpenses.toLocaleString()}`} />
+            <StatCard 
+              title="Submitted Reports" 
+              value={totalReports} 
+              icon={FileText} 
+              description="Across all levels"
+              href="/dashboard/reports/view" 
+            />
+            <StatCard 
+              title="Total Sites" 
+              value={totalSites} 
+              icon={Building} 
+              description="Managed sites"
+              href="/dashboard/sites" 
+            />
+            <StatCard 
+              title="Total Small Groups" 
+              value={totalSmallGroups} 
+              icon={UsersRound} 
+              description="Active small groups"
+              href="/dashboard/members" // Or a dedicated small groups page if it exists
+            />
+            <StatCard 
+              title="Net Balance" 
+              value={`$${netBalance.toLocaleString()}`} 
+              icon={Briefcase} 
+              description={`Income: $${totalIncome.toLocaleString()}, Expenses: $${totalExpenses.toLocaleString()}`}
+              href="/dashboard/finances"
+            />
           </>
         )}
          {currentUser?.role === ROLES.SITE_COORDINATOR && (
           <>
-             <StatCard title="Site Reports" value={mockReports.filter(r => r.siteId === currentUser.siteId).length} icon={FileText} />
-             <StatCard title="Site Small Groups" value={mockSmallGroups.filter(sg => sg.siteId === currentUser.siteId).length} icon={UsersRound} />
+             <StatCard 
+               title="Site Reports" 
+               value={mockReports.filter(r => r.siteId === currentUser.siteId).length} 
+               icon={FileText}
+               href="/dashboard/reports/view" // User can filter by their site on the reports page
+              />
+             <StatCard 
+               title="Site Small Groups" 
+               value={mockSmallGroups.filter(sg => sg.siteId === currentUser.siteId).length} 
+               icon={UsersRound}
+               href="/dashboard/members" // User can filter/see members of their site's small groups
+              />
           </>
         )}
          {currentUser?.role === ROLES.SMALL_GROUP_LEADER && (
-           <StatCard title="Group Reports" value={mockReports.filter(r => r.smallGroupId === currentUser.smallGroupId).length} icon={FileText} />
+           <StatCard 
+             title="Group Reports" 
+             value={mockReports.filter(r => r.smallGroupId === currentUser.smallGroupId).length} 
+             icon={FileText}
+             href="/dashboard/reports/view" // User can filter by their small group on the reports page
+            />
         )}
       </div>
 
@@ -201,7 +252,7 @@ export default function NationalCoordinatorDashboard() {
               <div className="flex justify-between items-start">
                 <div>
                   <h4 className="font-semibold text-md">{activity.name}</h4>
-                  <p className="text-sm text-muted-foreground">{activity.level} level - {new Date(activity.date).toLocaleDateString()}</p>
+                  <p className="text-sm text-muted-foreground">{activity.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} level - {new Date(activity.date).toLocaleDateString()}</p>
                 </div>
                 <span className={`px-2 py-1 text-xs rounded-full font-medium ${
                   activity.status === 'executed' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
@@ -223,4 +274,5 @@ export default function NationalCoordinatorDashboard() {
     </RoleBasedGuard>
   );
 }
+
 

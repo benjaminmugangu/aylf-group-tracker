@@ -69,4 +69,6 @@ export interface StatCardData {
   value: string | number;
   icon: React.ElementType;
   description?: string;
+  href?: string; // Added href for clickability
 }
+

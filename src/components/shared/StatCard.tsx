@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StatCardData } from "@/lib/types";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
-export function StatCard({ title, value, icon: Icon, description }: StatCardData) {
-  return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+export function StatCard({ title, value, icon: Icon, description, href }: StatCardData) {
+  const cardContent = (
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -19,4 +21,15 @@ export function StatCard({ title, value, icon: Icon, description }: StatCardData
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block h-full">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 }
+
