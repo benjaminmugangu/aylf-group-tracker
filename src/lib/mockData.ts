@@ -45,7 +45,7 @@ export const mockSites: Site[] = [
 export const mockSmallGroups: SmallGroup[] = [
   // Beni
   { id: "sg_beni_alumni", name: "ALUMNI", siteId: "site_beni", leaderId: "user_sg_beni_alumni" },
-  { id: "sg_beni_isc", name: "ISC", siteId: "site_beni", leaderId: "user_site_beni" },
+  { id: "sg_beni_isc", name: "ISC", siteId: "site_beni", leaderId: "user_site_beni" }, // Assuming site coordinator can also lead
   { id: "sg_beni_uac", name: "UAC", siteId: "site_beni", leaderId: "user_site_beni" },
   { id: "sg_beni_ucbc", name: "UCBC", siteId: "site_beni", leaderId: "user_site_beni" },
   { id: "sg_beni_uos", name: "UOS", siteId: "site_beni", leaderId: "user_site_beni" },
@@ -109,6 +109,13 @@ export const mockActivities: Activity[] = [
   { id: "act_5", name: "Annual Youth Conference", description: "National gathering for all youth.", date: "2023-12-10", status: "executed", level: "national", participantsCount: 500 },
   { id: "act_6", name: "Sports Day", description: "Goma site inter-group sports event.", date: "2023-11-05", status: "executed", level: "site", siteId: "site_goma", participantsCount: 80 },
   { id: "act_7", name: "Prayer Breakfast", description: "Kinshasa UNIKIN Group monthly meeting.", date: "2024-07-10", status: "cancelled", level: "small_group", smallGroupId: "sg_kinshasa_unikin", participantsCount: 8 },
+  { id: "act_8", name: "Bunia Site Evangelism Training", description: "Training for evangelism in Bunia.", date: "2024-08-10", status: "planned", level: "site", siteId: "site_bunia", participantsCount: 30 },
+  { id: "act_9", name: "Butembo UCG Bible Study", description: "Weekly bible study at UCG Butembo.", date: "2024-07-25", status: "executed", level: "small_group", smallGroupId: "sg_butembo_ucg", participantsCount: 15 },
+  { id: "act_10", name: "Kalemie ISP Leadership Seminar", description: "Leadership seminar for ISP Kalemie students.", date: "2024-09-05", status: "planned", level: "small_group", smallGroupId: "sg_kalemie_isp", participantsCount: 25 },
+  { id: "act_11", name: "Kisangani National Day Celebration", description: "Site event for National Day.", date: "2024-06-30", status: "executed", level: "site", siteId: "site_kisangani", participantsCount: 70 },
+  { id: "act_12", name: "Kolwezi UNIKOL Book Club", description: "Monthly book club at UNIKOL Kolwezi.", date: "2024-07-15", status: "executed", level: "small_group", smallGroupId: "sg_kolwezi_unikol", participantsCount: 10 },
+  { id: "act_13", name: "Lubumbashi UNILU Career Fair", description: "Career fair for UNILU students.", date: "2024-10-10", status: "planned", level: "small_group", smallGroupId: "sg_lubumbashi_unilu", participantsCount: 100 },
+  { id: "act_14", name: "Uvira Community Cleanup", description: "Community cleanup organized by Uvira site.", date: "2024-08-20", status: "planned", level: "site", siteId: "site_uvira", participantsCount: 50 },
 ];
 
 export const mockMembers: Member[] = [
@@ -119,6 +126,12 @@ export const mockMembers: Member[] = [
   { id: "mem_5", name: "David Lee", type: "non-student", siteId: "site_kinshasa", smallGroupId: "sg_kinshasa_alumni", joinDate: "2023-05-05" },
   { id: "mem_6", name: "Emily White", type: "student", siteId: "site_butembo", smallGroupId: "sg_butembo_uac", joinDate: "2024-01-10" },
   { id: "mem_7", name: "Chris Green", type: "student", siteId: "site_kalemie", smallGroupId: "sg_kalemie_unikal", joinDate: "2024-03-20" },
+  { id: "mem_8", name: "Laura Blue", type: "student", siteId: "site_bunia", smallGroupId: "sg_bunia_unibu", joinDate: "2023-09-01" },
+  { id: "mem_9", name: "Kevin Black", type: "non-student", siteId: "site_kisangani", smallGroupId: "sg_kisangani_alumni", joinDate: "2022-07-15" },
+  { id: "mem_10", name: "Olivia Yellow", type: "student", siteId: "site_kolwezi", smallGroupId: "sg_kolwezi_unikol", joinDate: "2023-11-05" },
+  { id: "mem_11", name: "Daniel Purple", type: "student", siteId: "site_lubumbashi", smallGroupId: "sg_lubumbashi_unilu", joinDate: "2024-02-20" },
+  { id: "mem_12", name: "Grace Silver", type: "non-student", siteId: "site_beni", smallGroupId: "sg_beni_alumni", joinDate: "2021-10-10" },
+  { id: "mem_13", name: "Tom Gold", type: "student", siteId: "site_goma", smallGroupId: "sg_goma_ulpgl", joinDate: "2023-08-12" },
 ];
 
 export const mockReports: Report[] = [
@@ -128,9 +141,9 @@ export const mockReports: Report[] = [
     submittedBy: "user_nat_1", 
     submissionDate: "2024-07-01", 
     level: "national", 
-    content: "The Q2 leadership workshop was a success with high engagement.", 
+    content: "The Q2 leadership workshop was a success with high engagement from all site coordinators. Key topics included strategic planning and conflict resolution.", 
     images: [{ name: "workshop_group.jpg", url: "https://picsum.photos/seed/workshop1/400/300" }],
-    financialSummary: "Total expenses: $500. Income from registration: $200."
+    financialSummary: "Total expenses: $500 for materials and speaker fees. Income from registration: $200."
   },
   { 
     id: "rep_2", 
@@ -139,12 +152,12 @@ export const mockReports: Report[] = [
     submissionDate: "2024-07-22", 
     level: "site", 
     siteId: "site_beni", 
-    content: "Reached 50 families, distributed food packs. Positive feedback received.",
+    content: "Reached 50 families in the local area, distributed food packs and hygiene kits. Positive feedback received from community leaders.",
     images: [
         { name: "outreach_team.jpg", url: "https://picsum.photos/seed/outreach1/400/300" }, 
         { name: "beneficiaries.jpg", url: "https://picsum.photos/seed/beneficiaries1/400/300" }
     ],
-    financialSummary: "Donations received: $300. Expenses for supplies: $250."
+    financialSummary: "Donations received: $300. Expenses for supplies: $250. Net: $50 surplus."
   },
   { 
     id: "rep_3", 
@@ -153,9 +166,31 @@ export const mockReports: Report[] = [
     submissionDate: "2024-07-29", 
     level: "small_group", 
     smallGroupId: "sg_beni_alumni", 
-    content: "Completed first 5 chapters. Rich discussions on purpose and identity.",
+    content: "Completed first 5 chapters of 'Purpose Driven Life'. Rich discussions on purpose, identity, and service. Average attendance: 10 members.",
     images: [{ name: "book_study.jpg", url: "https://picsum.photos/seed/bookstudy/400/300" }],
-    financialSummary: "No financial activity this period."
+    financialSummary: "No financial activity this period. Refreshments were self-funded by members."
+  },
+  { 
+    id: "rep_4", 
+    title: "Goma Site Sports Day Recap", 
+    submittedBy: "user_site_goma", 
+    submissionDate: "2023-11-10", 
+    level: "site", 
+    siteId: "site_goma", 
+    content: "Successful sports day with over 80 participants. ISIG group won the football tournament. Promoted teamwork and fellowship.",
+    images: [{ name: "sports_day_goma.jpg", url: "https://picsum.photos/seed/sportsgoma/400/300" }],
+    financialSummary: "Expenses for equipment and refreshments: $150. Covered by site budget."
+  },
+   { 
+    id: "rep_5", 
+    title: "Kinshasa UNIKIN Prayer Breakfast Outcome", 
+    submittedBy: "user_sg_kinshasa_unikin", 
+    submissionDate: "2024-06-15", 
+    level: "small_group", 
+    smallGroupId: "sg_kinshasa_unikin", 
+    content: "Monthly prayer breakfast held with 15 students. Focus on academic success and spiritual growth. Event was well-received.",
+    images: [],
+    financialSummary: "Cost for breakfast items: $30. Covered by member contributions."
   },
 ];
 
@@ -190,26 +225,98 @@ export const mockTransactions: Transaction[] = [
   // National Income
   { id: 'txn_nat_inc_1', date: '2024-06-01', amount: 10000, description: 'Grant from XYZ Foundation', transactionType: 'income_source', senderEntityType: 'external_donor', senderEntityId: 'donor_xyz', senderEntityName: 'XYZ Foundation', recipientEntityType: 'national', recipientEntityId: 'aylf_national', recipientEntityName: 'AYLF National', level: 'national' },
   { id: 'txn_nat_inc_2', date: '2024-06-15', amount: 5000, description: 'General Donations Q2', transactionType: 'income_source', senderEntityType: 'external_donor', senderEntityId: 'donors_general', senderEntityName: 'Various Donors', recipientEntityType: 'national', recipientEntityId: 'aylf_national', recipientEntityName: 'AYLF National', level: 'national' },
+  { id: 'txn_nat_inc_3', date: '2024-07-05', amount: 7500, description: 'Partnership Contribution - ABC Corp', transactionType: 'income_source', senderEntityType: 'external_donor', senderEntityId: 'donor_abc_corp', senderEntityName: 'ABC Corporation', recipientEntityType: 'national', recipientEntityId: 'aylf_national', recipientEntityName: 'AYLF National', level: 'national' },
   
   // National to Site Transfers
-  { id: 'txn_nat_site_beni_1', date: '2024-07-01', amount: 2000, description: 'Q3 Budget for Site Beni', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'site', recipientEntityId: 'site_beni', recipientEntityName: 'Site Beni', level: 'national', relatedSiteId: 'site_beni' },
-  { id: 'txn_nat_site_bukavu_1', date: '2024-07-01', amount: 1800, description: 'Q3 Budget for Site Bukavu', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'site', recipientEntityId: 'site_bukavu', recipientEntityName: 'Site Bukavu', level: 'national', relatedSiteId: 'site_bukavu' },
-  { id: 'txn_nat_site_goma_1', date: '2024-07-02', amount: 2200, description: 'Special Project Funding Goma', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'site', recipientEntityId: 'site_goma', recipientEntityName: 'Site Goma', level: 'national', relatedSiteId: 'site_goma' },
+  { id: 'txn_nat_site_beni_1', date: '2024-07-01', amount: 2000, description: 'Q3 Budget for Site Beni', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', recipientEntityType: 'site', recipientEntityId: 'site_beni', level: 'national', relatedSiteId: 'site_beni' },
+  { id: 'txn_nat_site_bukavu_1', date: '2024-07-01', amount: 1800, description: 'Q3 Budget for Site Bukavu', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', recipientEntityType: 'site', recipientEntityId: 'site_bukavu', level: 'national', relatedSiteId: 'site_bukavu' },
+  { id: "txn_nat_site_bunia_1", date: "2024-07-02", amount: 1500, description: "Q3 Budget for Site Bunia", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_bunia", level: "national", relatedSiteId: "site_bunia" },
+  { id: "txn_nat_site_butembo_1", date: "2024-07-02", amount: 1600, description: "Q3 Budget for Site Butembo", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_butembo", level: "national", relatedSiteId: "site_butembo" },
+  { id: 'txn_nat_site_goma_1', date: '2024-07-02', amount: 2200, description: 'Special Project Funding Goma', transactionType: 'transfer', senderEntityType: 'national', senderEntityId: 'aylf_national', recipientEntityType: 'site', recipientEntityId: 'site_goma', level: 'national', relatedSiteId: 'site_goma' },
+  { id: "txn_nat_site_kalemie_1", date: "2024-07-03", amount: 1400, description: "Q3 Budget for Site Kalemie", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_kalemie", level: "national", relatedSiteId: "site_kalemie" },
+  { id: "txn_nat_site_kinshasa_1", date: "2024-07-03", amount: 2500, description: "Q3 Budget for Site Kinshasa", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_kinshasa", level: "national", relatedSiteId: "site_kinshasa" },
+  { id: "txn_nat_site_kisangani_1", date: "2024-07-04", amount: 1700, description: "Q3 Budget for Site Kisangani", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_kisangani", level: "national", relatedSiteId: "site_kisangani" },
+  { id: "txn_nat_site_kolwezi_1", date: "2024-07-04", amount: 1300, description: "Q3 Budget for Site Kolwezi", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_kolwezi", level: "national", relatedSiteId: "site_kolwezi" },
+  { id: "txn_nat_site_lubumbashi_1", date: "2024-07-05", amount: 2300, description: "Q3 Budget for Site Lubumbashi", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_lubumbashi", level: "national", relatedSiteId: "site_lubumbashi" },
+  { id: "txn_nat_site_uvira_1", date: "2024-07-05", amount: 1200, description: "Q3 Budget for Site Uvira", transactionType: "transfer", senderEntityType: "national", senderEntityId: "aylf_national", recipientEntityType: "site", recipientEntityId: "site_uvira", level: "national", relatedSiteId: "site_uvira" },
 
   // National Expenses
-  { id: 'txn_nat_exp_1', date: '2024-07-05', amount: 1200, description: 'National Conference Venue Booking', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'vendor', recipientEntityId: 'venue_conf_center', recipientEntityName: 'Capital Conference Center', level: 'national' },
-  { id: 'txn_nat_exp_2', date: '2024-07-10', amount: 300, description: 'Website Hosting Fees', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', senderEntityName: 'AYLF National', recipientEntityType: 'vendor', recipientEntityId: 'host_co_123', recipientEntityName: 'Web Services Inc.', level: 'national' },
+  { id: 'txn_nat_exp_1', date: '2024-07-05', amount: 1200, description: 'National Conference Venue Booking', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', recipientEntityType: 'vendor', recipientEntityId: 'venue_conf_center', recipientEntityName: 'Capital Conference Center', level: 'national' },
+  { id: 'txn_nat_exp_2', date: '2024-07-10', amount: 300, description: 'Website Hosting Fees', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', recipientEntityType: 'vendor', recipientEntityId: 'host_co_123', recipientEntityName: 'Web Services Inc.', level: 'national' },
+  { id: 'txn_nat_exp_3', date: '2024-07-18', amount: 450, description: 'Travel Expenses - National Coordinator', transactionType: 'expense', senderEntityType: 'national', senderEntityId: 'aylf_national', recipientEntityType: 'other', recipientEntityId: 'travel_agency_A1', recipientEntityName: 'Express Travel', level: 'national' },
   
   // Site Beni to Small Group Transfers
-  { id: 'txn_site_beni_sg_alumni_1', date: '2024-07-10', amount: 150, description: 'Activity support for Alumni SG', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', senderEntityName: 'Site Beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_alumni', recipientEntityName: 'Beni Alumni SG', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_alumni' },
-  { id: 'txn_site_beni_sg_isc_1', date: '2024-07-11', amount: 100, description: 'Materials for ISC SG workshop', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', senderEntityName: 'Site Beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_isc', recipientEntityName: 'Beni ISC SG', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_isc' },
+  { id: 'txn_site_beni_sg_alumni_1', date: '2024-07-10', amount: 150, description: 'Activity support for Alumni SG', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_alumni', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_alumni' },
+  { id: 'txn_site_beni_sg_isc_1', date: '2024-07-11', amount: 100, description: 'Materials for ISC SG workshop', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_isc', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_isc' },
+  { id: 'txn_site_beni_sg_uac_1', date: '2024-07-12', amount: 120, description: 'Refreshments for UAC SG meeting', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_beni', recipientEntityType: 'small_group', recipientEntityId: 'sg_beni_uac', level: 'site', relatedSiteId: 'site_beni', relatedSmallGroupId: 'sg_beni_uac' },
 
   // Site Beni Expenses
-  { id: 'txn_site_beni_exp_1', date: '2024-07-15', amount: 80, description: 'Printing for Site Workshop', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_beni', senderEntityName: 'Site Beni', recipientEntityType: 'vendor', recipientEntityId: 'beni_print_shop', recipientEntityName: 'Beni Print Services', level: 'site', relatedSiteId: 'site_beni' },
+  { id: 'txn_site_beni_exp_1', date: '2024-07-15', amount: 80, description: 'Printing for Site Workshop', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_beni', recipientEntityType: 'vendor', recipientEntityId: 'beni_print_shop', recipientEntityName: 'Beni Print Services', level: 'site', relatedSiteId: 'site_beni' },
+  { id: 'txn_site_beni_exp_2', date: '2024-07-20', amount: 50, description: 'Local Transport for Site Coordinator', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_beni', recipientEntityType: 'other', recipientEntityId: 'local_transport_beni', recipientEntityName: 'Beni Transport', level: 'site', relatedSiteId: 'site_beni' },
 
   // Site Bukavu to Small Group Transfers
-  { id: 'txn_site_bukavu_sg_uea_1', date: '2024-07-12', amount: 200, description: 'UEA SG Outreach Event', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_bukavu', senderEntityName: 'Site Bukavu', recipientEntityType: 'small_group', recipientEntityId: 'sg_bukavu_uea', recipientEntityName: 'Bukavu UEA SG', level: 'site', relatedSiteId: 'site_bukavu', relatedSmallGroupId: 'sg_bukavu_uea' },
-  
+  { id: 'txn_site_bukavu_sg_uea_1', date: '2024-07-12', amount: 200, description: 'UEA SG Outreach Event', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_bukavu', recipientEntityType: 'small_group', recipientEntityId: 'sg_bukavu_uea', level: 'site', relatedSiteId: 'site_bukavu', relatedSmallGroupId: 'sg_bukavu_uea' },
+  { id: 'txn_site_bukavu_sg_isp_1', date: '2024-07-13', amount: 130, description: 'ISP SG Guest Speaker Honorarium', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_bukavu', recipientEntityType: 'small_group', recipientEntityId: 'sg_bukavu_isp', level: 'site', relatedSiteId: 'site_bukavu', relatedSmallGroupId: 'sg_bukavu_isp' },
+
+  // Site Bukavu Expenses
+  { id: 'txn_site_bukavu_exp_1', date: '2024-07-18', amount: 70, description: 'Office Supplies for Bukavu Site', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_bukavu', recipientEntityType: 'vendor', recipientEntityId: 'bukavu_stationery', recipientEntityName: 'Bukavu Stationery Shop', level: 'site', relatedSiteId: 'site_bukavu' },
+  { id: 'txn_site_bukavu_exp_2', date: '2024-07-22', amount: 90, description: 'Venue Rental for Site Meeting', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_bukavu', recipientEntityType: 'vendor', recipientEntityId: 'bukavu_hall_rental', recipientEntityName: 'Umoja Hall Bukavu', level: 'site', relatedSiteId: 'site_bukavu' },
+
+  // Site Goma to Small Group Transfers
+  { id: 'txn_site_goma_sg_isig_1', date: '2024-07-14', amount: 180, description: 'ISIG SG Project Materials', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_goma', recipientEntityType: 'small_group', recipientEntityId: 'sg_goma_isig', level: 'site', relatedSiteId: 'site_goma', relatedSmallGroupId: 'sg_goma_isig' },
+  { id: 'txn_site_goma_sg_ulpgl_1', date: '2024-07-15', amount: 140, description: 'ULPGL SG Community Service Day', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_goma', recipientEntityType: 'small_group', recipientEntityId: 'sg_goma_ulpgl', level: 'site', relatedSiteId: 'site_goma', relatedSmallGroupId: 'sg_goma_ulpgl' },
+
   // Site Goma Expenses
-  { id: 'txn_site_goma_exp_1', date: '2024-07-18', amount: 120, description: 'Refreshments for Goma Leaders Meeting', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_goma', senderEntityName: 'Site Goma', recipientEntityType: 'vendor', recipientEntityId: 'goma_catering_serv', recipientEntityName: 'Goma Catering', level: 'site', relatedSiteId: 'site_goma' },
+  { id: 'txn_site_goma_exp_1', date: '2024-07-18', amount: 120, description: 'Refreshments for Goma Leaders Meeting', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_goma', recipientEntityType: 'vendor', recipientEntityId: 'goma_catering_serv', recipientEntityName: 'Goma Catering', level: 'site', relatedSiteId: 'site_goma' },
+  { id: 'txn_site_goma_exp_2', date: '2024-07-25', amount: 60, description: 'Internet Subscription - Goma Site Office', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_goma', recipientEntityType: 'vendor', recipientEntityId: 'goma_isp_provider', recipientEntityName: 'GomaNet ISP', level: 'site', relatedSiteId: 'site_goma' },
+
+  // Site Kinshasa to Small Group Transfers
+  { id: 'txn_site_kin_sg_unikin_1', date: '2024-07-16', amount: 250, description: 'UNIKIN SG Seminar Resources', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_kinshasa', recipientEntityType: 'small_group', recipientEntityId: 'sg_kinshasa_unikin', level: 'site', relatedSiteId: 'site_kinshasa', relatedSmallGroupId: 'sg_kinshasa_unikin' },
+  { id: 'txn_site_kin_sg_alumni_1', date: '2024-07-17', amount: 200, description: 'Kinshasa Alumni Networking Event', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_kinshasa', recipientEntityType: 'small_group', recipientEntityId: 'sg_kinshasa_alumni', level: 'site', relatedSiteId: 'site_kinshasa', relatedSmallGroupId: 'sg_kinshasa_alumni' },
+  
+  // Site Kinshasa Expenses
+  { id: 'txn_site_kin_exp_1', date: '2024-07-20', amount: 150, description: 'Office Rent - Kinshasa Site', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_kinshasa', recipientEntityType: 'vendor', recipientEntityId: 'kin_office_space', recipientEntityName: 'Kin Spaces Ltd', level: 'site', relatedSiteId: 'site_kinshasa' },
+  { id: 'txn_site_kin_exp_2', date: '2024-07-28', amount: 100, description: 'Communication Allowance - Kinshasa Coordinator', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_kinshasa', recipientEntityType: 'other', recipientEntityId: 'comm_allow_kin', recipientEntityName: 'Coordinator Communication', level: 'site', relatedSiteId: 'site_kinshasa' },
+
+  // Site Lubumbashi to Small Group Transfers
+  { id: 'txn_site_lub_sg_unilu_1', date: '2024-07-18', amount: 220, description: 'UNILU SG Leadership Training', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_lubumbashi', recipientEntityType: 'small_group', recipientEntityId: 'sg_lubumbashi_unilu', level: 'site', relatedSiteId: 'site_lubumbashi', relatedSmallGroupId: 'sg_lubumbashi_unilu' },
+  { id: 'txn_site_lub_sg_alumni_1', date: '2024-07-19', amount: 180, description: 'Lubumbashi Alumni Mentorship Program', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_lubumbashi', recipientEntityType: 'small_group', recipientEntityId: 'sg_lubumbashi_alumni', level: 'site', relatedSiteId: 'site_lubumbashi', relatedSmallGroupId: 'sg_lubumbashi_alumni' },
+
+  // Site Lubumbashi Expenses
+  { id: 'txn_site_lub_exp_1', date: '2024-07-22', amount: 130, description: 'Event Banners and Materials - Lubumbashi', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_lubumbashi', recipientEntityType: 'vendor', recipientEntityId: 'lub_print_co', recipientEntityName: 'Lubumbashi Print Co', level: 'site', relatedSiteId: 'site_lubumbashi' },
+  { id: 'txn_site_lub_exp_2', date: '2024-07-29', amount: 90, description: 'Utility Bills - Lubumbashi Site Office', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_lubumbashi', recipientEntityType: 'vendor', recipientEntityId: 'lub_utility_serv', recipientEntityName: 'Lubumbashi Utilities', level: 'site', relatedSiteId: 'site_lubumbashi' },
+
+  // Transfers and Expenses for other sites (simplified, one per category)
+  // Bunia
+  { id: 'txn_site_bunia_sg_unibu_1', date: '2024-07-20', amount: 100, description: 'UNIBU SG Study Materials', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_bunia', recipientEntityType: 'small_group', recipientEntityId: 'sg_bunia_unibu', level: 'site', relatedSiteId: 'site_bunia', relatedSmallGroupId: 'sg_bunia_unibu' },
+  { id: 'txn_site_bunia_exp_1', date: '2024-07-25', amount: 50, description: 'Refreshments for Bunia Site Meeting', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_bunia', recipientEntityType: 'vendor', recipientEntityId: 'bunia_refresh', recipientEntityName: 'Bunia Refreshments', level: 'site', relatedSiteId: 'site_bunia' },
+  // Butembo
+  { id: 'txn_site_butembo_sg_ucg_1', date: '2024-07-21', amount: 110, description: 'UCG SG Outreach Support', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_butembo', recipientEntityType: 'small_group', recipientEntityId: 'sg_butembo_ucg', level: 'site', relatedSiteId: 'site_butembo', relatedSmallGroupId: 'sg_butembo_ucg' },
+  { id: 'txn_site_butembo_exp_1', date: '2024-07-26', amount: 60, description: 'Transport for Butembo Site Visit', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_butembo', recipientEntityType: 'other', recipientEntityId: 'butembo_transport', recipientEntityName: 'Butembo Transport Co', level: 'site', relatedSiteId: 'site_butembo' },
+  // Kalemie
+  { id: 'txn_site_kalemie_sg_isp_1', date: '2024-07-22', amount: 90, description: 'ISP SG Event Support', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_kalemie', recipientEntityType: 'small_group', recipientEntityId: 'sg_kalemie_isp', level: 'site', relatedSiteId: 'site_kalemie', relatedSmallGroupId: 'sg_kalemie_isp' },
+  { id: 'txn_site_kalemie_exp_1', date: '2024-07-27', amount: 40, description: 'Stationery for Kalemie Site', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_kalemie', recipientEntityType: 'vendor', recipientEntityId: 'kalemie_stationery', recipientEntityName: 'Kalemie Supplies', level: 'site', relatedSiteId: 'site_kalemie' },
+  // Kisangani
+  { id: 'txn_site_kisangani_sg_unikis_1', date: '2024-07-23', amount: 120, description: 'UNIKIS SG Workshop Materials', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_kisangani', recipientEntityType: 'small_group', recipientEntityId: 'sg_kisangani_unikis', level: 'site', relatedSiteId: 'site_kisangani', relatedSmallGroupId: 'sg_kisangani_unikis' },
+  { id: 'txn_site_kisangani_exp_1', date: '2024-07-28', amount: 70, description: 'Kisangani Site Meeting Room Rental', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_kisangani', recipientEntityType: 'vendor', recipientEntityId: 'kisangani_venue', recipientEntityName: 'Kisangani Halls', level: 'site', relatedSiteId: 'site_kisangani' },
+  // Kolwezi
+  { id: 'txn_site_kolwezi_sg_unikol_1', date: '2024-07-24', amount: 80, description: 'UNIKOL SG Book Purchase', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_kolwezi', recipientEntityType: 'small_group', recipientEntityId: 'sg_kolwezi_unikol', level: 'site', relatedSiteId: 'site_kolwezi', relatedSmallGroupId: 'sg_kolwezi_unikol' },
+  { id: 'txn_site_kolwezi_exp_1', date: '2024-07-29', amount: 30, description: 'Printing - Kolwezi Site', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_kolwezi', recipientEntityType: 'vendor', recipientEntityId: 'kolwezi_prints', recipientEntityName: 'Kolwezi Print Shop', level: 'site', relatedSiteId: 'site_kolwezi' },
+  // Uvira
+  { id: 'txn_site_uvira_sg_isdr_1', date: '2024-07-25', amount: 70, description: 'ISDR SG Activity Support', transactionType: 'transfer', senderEntityType: 'site', senderEntityId: 'site_uvira', recipientEntityType: 'small_group', recipientEntityId: 'sg_uvira_isdr', level: 'site', relatedSiteId: 'site_uvira', relatedSmallGroupId: 'sg_uvira_isdr' },
+  { id: 'txn_site_uvira_exp_1', date: '2024-07-30', amount: 45, description: 'Refreshments Uvira Site Leaders Mtg', transactionType: 'expense', senderEntityType: 'site', senderEntityId: 'site_uvira', recipientEntityType: 'vendor', recipientEntityId: 'uvira_catering', recipientEntityName: 'Uvira Eats', level: 'site', relatedSiteId: 'site_uvira' },
 ];
+
+// Ensure all mock transactions have sender/recipient names if not defined
+mockTransactions.forEach(t => {
+    if (!t.senderEntityName && t.senderEntityType !== 'external_donor' && t.senderEntityType !== 'vendor' && t.senderEntityType !== 'beneficiary' && t.senderEntityType !== 'other') {
+        if(t.senderEntityType === 'national') t.senderEntityName = "AYLF National";
+        else if (t.senderEntityType === 'site') t.senderEntityName = mockSites.find(s => s.id === t.senderEntityId)?.name;
+        else if (t.senderEntityType === 'small_group') t.senderEntityName = mockSmallGroups.find(sg => sg.id === t.senderEntityId)?.name;
+    }
+    if (!t.recipientEntityName && t.recipientEntityType !== 'external_donor' && t.recipientEntityType !== 'vendor' && t.recipientEntityType !== 'beneficiary' && t.recipientEntityType !== 'other') {
+        if(t.recipientEntityType === 'national') t.recipientEntityName = "AYLF National";
+        else if (t.recipientEntityType === 'site') t.recipientEntityName = mockSites.find(s => s.id === t.recipientEntityId)?.name;
+        else if (t.recipientEntityType === 'small_group') t.recipientEntityName = mockSmallGroups.find(sg => sg.id === t.recipientEntityId)?.name;
+    }
+});
