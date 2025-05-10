@@ -45,7 +45,7 @@ export const mockSites: Site[] = [
 export const mockSmallGroups: SmallGroup[] = [
   // Beni
   { id: "sg_beni_alumni", name: "ALUMNI", siteId: "site_beni", leaderId: "user_sg_beni_alumni" },
-  { id: "sg_beni_isc", name: "ISC", siteId: "site_beni", leaderId: "user_site_beni" }, // Assuming site coordinator can also lead
+  { id: "sg_beni_isc", name: "ISC", siteId: "site_beni", leaderId: "user_site_beni" }, 
   { id: "sg_beni_uac", name: "UAC", siteId: "site_beni", leaderId: "user_site_beni" },
   { id: "sg_beni_ucbc", name: "UCBC", siteId: "site_beni", leaderId: "user_site_beni" },
   { id: "sg_beni_uos", name: "UOS", siteId: "site_beni", leaderId: "user_site_beni" },
@@ -138,21 +138,40 @@ export const mockReports: Report[] = [
   { 
     id: "rep_1", 
     title: "Q2 Leadership Workshop Summary", 
+    activityDate: "2024-06-28",
     submittedBy: "user_nat_1", 
     submissionDate: "2024-07-01", 
     level: "national", 
-    content: "The Q2 leadership workshop was a success with high engagement from all site coordinators. Key topics included strategic planning and conflict resolution.", 
+    activityType: "Workshop",
+    thematic: "Strategic Planning and Conflict Resolution",
+    speaker: "Dr. Jane Goodall (Guest)",
+    moderator: "Alice National",
+    girlsCount: 60,
+    boysCount: 90,
+    participantsCountReported: 150,
+    amountUsed: 500,
+    currency: "USD",
+    content: "The Q2 leadership workshop was a success with high engagement from all site coordinators. Key topics included strategic planning and conflict resolution. Breakout sessions were particularly fruitful.", 
     images: [{ name: "workshop_group.jpg", url: "https://picsum.photos/seed/workshop1/400/300" }],
     financialSummary: "Total expenses: $500 for materials and speaker fees. Income from registration: $200."
   },
   { 
     id: "rep_2", 
     title: "July Community Outreach Report - Beni", 
+    activityDate: "2024-07-20",
     submittedBy: "user_site_beni", 
     submissionDate: "2024-07-22", 
     level: "site", 
     siteId: "site_beni", 
-    content: "Reached 50 families in the local area, distributed food packs and hygiene kits. Positive feedback received from community leaders.",
+    activityType: "Community Service",
+    thematic: "Supporting Local Families",
+    moderator: "Coordinator Beni",
+    girlsCount: 20, // Assuming some participants were girls/women from community
+    boysCount: 15, // Assuming some participants were boys/men from community
+    participantsCountReported: 45, // Sum of AYLF members + direct beneficiaries if counted
+    amountUsed: 250,
+    currency: "USD",
+    content: "Reached 50 families in the local area, distributed food packs and hygiene kits. Positive feedback received from community leaders. AYLF members involved: 10.",
     images: [
         { name: "outreach_team.jpg", url: "https://picsum.photos/seed/outreach1/400/300" }, 
         { name: "beneficiaries.jpg", url: "https://picsum.photos/seed/beneficiaries1/400/300" }
@@ -162,21 +181,38 @@ export const mockReports: Report[] = [
   { 
     id: "rep_3", 
     title: "Beni Alumni July Book Study Progress", 
+    activityDate: "2024-07-28",
     submittedBy: "user_sg_beni_alumni", 
     submissionDate: "2024-07-29", 
     level: "small_group", 
     smallGroupId: "sg_beni_alumni", 
-    content: "Completed first 5 chapters of 'Purpose Driven Life'. Rich discussions on purpose, identity, and service. Average attendance: 10 members.",
+    activityType: "Small Group Meeting",
+    thematic: "Purpose Driven Life - Chapters 1-5",
+    speaker: "N/A",
+    moderator: "Leader Beni Alumni",
+    girlsCount: 5,
+    boysCount: 7,
+    participantsCountReported: 12,
+    amountUsed: 5,
+    currency: "USD",
+    content: "Completed first 5 chapters of 'Purpose Driven Life'. Rich discussions on purpose, identity, and service. Average attendance: 12 members.",
     images: [{ name: "book_study.jpg", url: "https://picsum.photos/seed/bookstudy/400/300" }],
-    financialSummary: "No financial activity this period. Refreshments were self-funded by members."
+    financialSummary: "Refreshments cost $5, self-funded by members."
   },
   { 
     id: "rep_4", 
     title: "Goma Site Sports Day Recap", 
+    activityDate: "2023-11-05",
     submittedBy: "user_site_goma", 
     submissionDate: "2023-11-10", 
     level: "site", 
     siteId: "site_goma", 
+    activityType: "Sports Event",
+    thematic: "Teamwork and Fellowship",
+    moderator: "Coordinator Goma",
+    participantsCountReported: 80, // Assuming this is total participants
+    amountUsed: 150,
+    currency: "USD",
     content: "Successful sports day with over 80 participants. ISIG group won the football tournament. Promoted teamwork and fellowship.",
     images: [{ name: "sports_day_goma.jpg", url: "https://picsum.photos/seed/sportsgoma/400/300" }],
     financialSummary: "Expenses for equipment and refreshments: $150. Covered by site budget."
@@ -184,41 +220,74 @@ export const mockReports: Report[] = [
    { 
     id: "rep_5", 
     title: "Kinshasa UNIKIN Prayer Breakfast Outcome", 
+    activityDate: "2024-06-15",
     submittedBy: "user_sg_kinshasa_unikin", 
-    submissionDate: "2024-06-15", 
+    submissionDate: "2024-06-18", 
     level: "small_group", 
     smallGroupId: "sg_kinshasa_unikin", 
+    activityType: "Small Group Meeting",
+    thematic: "Prayer for Academic Success",
+    speaker: "Pastor John Mark",
+    moderator: "Local SG Leader",
+    girlsCount: 8,
+    boysCount: 7,
+    participantsCountReported: 15,
+    amountUsed: 30,
+    currency: "USD",
     content: "Monthly prayer breakfast held with 15 students. Focus on academic success and spiritual growth. Event was well-received.",
     images: [{ name: "prayer_breakfast.jpg", url: "https://picsum.photos/seed/prayerbreakfast/400/300" }],
     financialSummary: "Cost for breakfast items: $30. Covered by member contributions."
   },
+  {
+    id: "rep_goma_ulpgl_1",
+    title: "ULPGL SG Meeting Report - April 26",
+    activityDate: "2025-04-26",
+    submittedBy: "user_sg_goma_alumni", // Assuming Goma Alumni leader submitted
+    submissionDate: "2025-04-27",
+    level: "small_group",
+    smallGroupId: "sg_goma_ulpgl",
+    siteId: "site_goma",
+    activityType: "Small Group Meeting",
+    thematic: "Agir avec différence positive dans la bonté et l'humilité au sein d'une societé perverse",
+    speaker: "Doyenne Facultaire Semerita Kamundu",
+    moderator: "David Ushindi",
+    girlsCount: 9,
+    boysCount: 17,
+    participantsCountReported: 26,
+    amountUsed: 11,
+    currency: "USD",
+    content: "The small group meeting at ULPGL focused on maintaining positive values in a challenging society. Doyenne Semerita Kamundu shared valuable insights, and David Ushindi facilitated the discussion effectively. The session was interactive and well-attended.",
+    images: [{ name: "ulpgl_meeting.jpg", url: "https://picsum.photos/seed/ulpglmeeting/400/300" }],
+    financialSummary: "Amount used for refreshments and materials: $11."
+  }
 ];
 
 
 export const historicalDataExample = `
 Past Activities:
-- Annual Youth Conference (Dec 2023): 500 attendees, feedback 4.5/5 stars. Topics: Leadership, Faith, Community. Resources: Guest speakers, workshops.
-- Regional Sports Tournament (Oct 2023): 120 participants from 3 sites. Feedback 4.2/5. Resources: Sports equipment, volunteer referees.
-- Online Bible Study Series (Q1 2024): Avg 80 participants per session. Feedback 4.0/5. Resources: Zoom, study guides.
-- Site Beni - Mentorship Program (Ongoing): 30 mentor-mentee pairs. Feedback 4.8/5. Resources: Training materials for mentors.
-- Small Group Beni Alumni - Local Charity Drive (May 2024): 15 members participated. Raised $200 for children's home. Feedback: Highly positive.
+- Annual Youth Conference (Dec 2023): 500 attendees, feedback 4.5/5 stars. Topics: Leadership, Faith, Community. Resources: Guest speakers, workshops. Activity Type: Conference. Amount Used: $2000.
+- Regional Sports Tournament (Oct 2023): 120 participants from 3 sites. Feedback 4.2/5. Resources: Sports equipment, volunteer referees. Activity Type: Sports Event. Amount Used: $300.
+- Online Bible Study Series (Q1 2024): Avg 80 participants per session. Feedback 4.0/5. Resources: Zoom, study guides. Activity Type: Online Meeting. Amount Used: $50 (for premium Zoom).
+- Site Beni - Mentorship Program (Ongoing): 30 mentor-mentee pairs. Feedback 4.8/5. Resources: Training materials for mentors. Activity Type: Program. Amount Used: $100 (materials).
+- Small Group Beni Alumni - Local Charity Drive (May 2024): 15 members participated. Raised $200 for children's home. Activity Type: Community Service. Amount Used: $50 (transport).
 `;
 
 export const currentTrendsExample = `
 Current Trends:
-- Increased interest in mental health and well-being workshops.
-- Popularity of short-form video content for engagement and event promotion.
-- Demand for hybrid events (online and in-person components).
-- Growing focus on practical skills development (e.g., coding, entrepreneurship, public speaking).
-- Gamification in learning and team-building activities.
+- Increased interest in mental health and well-being workshops (target 30-50 participants).
+- Popularity of short-form video content for engagement and event promotion (e.g., TikTok challenges, Instagram Reels recap).
+- Demand for hybrid events (online and in-person components), especially for larger trainings.
+- Growing focus on practical skills development (e.g., coding, entrepreneurship, public speaking) - workshops of 20-40 people.
+- Gamification in learning and team-building activities, suitable for small group meetings.
 `;
 
 export const groupPreferencesExample = `
 Group Preferences (Optional):
 - Target age group: 15-25 years.
 - Interests: Spiritual growth, leadership development, community service, technology.
-- Constraints: Limited budget for large-scale events. Preference for activities that can be replicated across different sites.
+- Constraints: Limited budget for large-scale events (max $500 per event, preferably under $100 for SG activities). Preference for activities that can be replicated across different sites.
 - Location: Primarily urban and peri-urban settings in Beni, Bukavu, Goma.
+- Desired activity types: Workshops, Seminars, Small group discussions, Mentorship sessions.
 `;
 
 export const mockTransactions: Transaction[] = [
@@ -321,3 +390,31 @@ mockTransactions.forEach(t => {
     }
 });
 
+// Populate participantsCountReported for mock reports
+mockReports.forEach(report => {
+  if (report.girlsCount !== undefined && report.boysCount !== undefined) {
+    report.participantsCountReported = report.girlsCount + report.boysCount;
+  } else if (report.girlsCount !== undefined) {
+    report.participantsCountReported = report.girlsCount;
+  } else if (report.boysCount !== undefined) {
+    report.participantsCountReported = report.boysCount;
+  }
+  // If neither is defined, participantsCountReported remains as potentially manually set or undefined.
+});
+
+// Ensure activities have participant counts if related reports have them
+mockActivities.forEach(activity => {
+  if (activity.participantsCount === undefined) {
+    const relatedReport = mockReports.find(
+      report => 
+        (report.level === activity.level && 
+        ((activity.level === 'national') || 
+         (activity.level === 'site' && report.siteId === activity.siteId) ||
+         (activity.level === 'small_group' && report.smallGroupId === activity.smallGroupId)) &&
+         report.title.toLowerCase().includes(activity.name.toLowerCase().substring(0,10))) // Basic matching
+    );
+    if (relatedReport && relatedReport.participantsCountReported !== undefined) {
+      activity.participantsCount = relatedReport.participantsCountReported;
+    }
+  }
+});

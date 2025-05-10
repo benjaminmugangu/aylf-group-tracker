@@ -31,8 +31,8 @@ export interface Activity {
   level: "national" | "site" | "small_group";
   siteId?: string;
   smallGroupId?: string;
-  participantsCount?: number;
-  imageUrl?: string; // Added for activity image
+  participantsCount?: number; // Expected or actual participants if directly tied to activity record
+  imageUrl?: string; 
 }
 
 export interface Member {
@@ -47,14 +47,24 @@ export interface Member {
 export interface Report {
   id: string;
   title: string;
+  activityDate: string; // Date of the activity itself
   submittedBy: string; // User ID
   submissionDate: string; // ISO date string
   level: "national" | "site" | "small_group";
   siteId?: string;
   smallGroupId?: string;
-  content: string; // Text content of the report
-  images?: Array<{ name: string; url: string }>; // Mocked image data
-  financialSummary?: string;
+  activityType: string; // e.g., "Small Group Meeting", "Workshop", "Conference"
+  thematic: string;
+  speaker?: string; 
+  moderator?: string;
+  girlsCount?: number;
+  boysCount?: number;
+  participantsCountReported?: number; // Derived from girlsCount + boysCount for this specific report
+  amountUsed?: number;
+  currency?: string; // e.g., "USD", "CDF"
+  content: string; // Main narrative/description of the report
+  images?: Array<{ name: string; url: string }>; 
+  financialSummary?: string; // Optional: for more detailed financial notes beyond amountUsed
 }
 
 export interface NavItem {
@@ -63,7 +73,7 @@ export interface NavItem {
   icon: React.ElementType;
   allowedRoles: Role[];
   children?: NavItem[];
-  filterKey?: string; // For filtering views, e.g. activities by status
+  filterKey?: string; 
   filterValue?: string;
 }
 
@@ -82,7 +92,7 @@ export interface Transaction {
   date: string; // ISO date string
   amount: number; // Always positive
   description: string;
-  transactionType: 'transfer' | 'expense' | 'income_source'; // 'transfer' between internal entities, 'expense' to external, 'income_source' from external
+  transactionType: 'transfer' | 'expense' | 'income_source'; 
   
   senderEntityType: 'national' | 'site' | 'small_group' | 'external_donor';
   senderEntityId: string; 
@@ -92,9 +102,7 @@ export interface Transaction {
   recipientEntityId: string; 
   recipientEntityName?: string;
 
-  // For easier filtering and context
-  level: 'national' | 'site' | 'small_group'; // The level this transaction is primarily associated with or initiated from
-  relatedSiteId?: string; // If related to a specific site (either sender or recipient)
-  relatedSmallGroupId?: string; // If related to a specific small group (either sender or recipient)
+  level: 'national' | 'site' | 'small_group'; 
+  relatedSiteId?: string; 
+  relatedSmallGroupId?: string; 
 }
-

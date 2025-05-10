@@ -5,13 +5,13 @@ import type { Report } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit3, Trash2, UserCircle, CalendarDays, BarChartHorizontalBig } from "lucide-react";
+import { Eye, UserCircle, CalendarDays, Tag, Hash, Users } from "lucide-react"; // Added Tag for activity type, Hash for thematic
 import Image from "next/image";
+import { format } from "date-fns";
 
 interface ReportCardProps {
   report: Report;
   onViewDetails: (reportId: string) => void;
-  // Add edit/delete handlers if needed
 }
 
 export function ReportCard({ report, onViewDetails }: ReportCardProps) {
@@ -27,7 +27,7 @@ export function ReportCard({ report, onViewDetails }: ReportCardProps) {
   return (
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
       {report.images && report.images.length > 0 && (
-        <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
+        <div className="relative w-full h-40 overflow-hidden rounded-t-lg">
           <Image 
             src={report.images[0].url} 
             alt={report.images[0].name} 
@@ -38,32 +38,44 @@ export function ReportCard({ report, onViewDetails }: ReportCardProps) {
           />
         </div>
       )}
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-            <CardTitle className="text-lg font-semibold leading-tight mb-1">{report.title}</CardTitle>
-            <Badge variant="outline" className={`${getLevelBadgeColor(report.level)} border-none text-xs px-2 py-0.5`}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start mb-1">
+            <CardTitle className="text-base font-semibold leading-tight line-clamp-2">{report.title}</CardTitle>
+            <Badge variant="outline" className={`${getLevelBadgeColor(report.level)} border-none text-xs px-1.5 py-0.5`}>
                 {report.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </Badge>
         </div>
-        <div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
-            <span className="flex items-center"><UserCircle className="mr-1 h-3 w-3" /> Submitted by: {report.submittedBy}</span>
-            <span className="flex items-center"><CalendarDays className="mr-1 h-3 w-3" /> {new Date(report.submissionDate).toLocaleDateString()}</span>
-        </div>
+        <CardDescription className="text-xs text-muted-foreground space-y-0.5">
+          <div className="flex items-center"><CalendarDays className="mr-1.5 h-3 w-3" />Activity Date: {format(new Date(report.activityDate), "PP")}</div>
+          <div className="flex items-center"><Tag className="mr-1.5 h-3 w-3" />Type: {report.activityType}</div>
+          <div className="flex items-center truncate"><Hash className="mr-1.5 h-3 w-3" />Theme: {report.thematic}</div>
+        </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground line-clamp-3">{report.content}</p>
-        {report.financialSummary && (
-            <div className="mt-2">
+      <CardContent className="flex-grow pt-2 pb-3">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-1">{report.content}</p>
+        <div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
+            {report.participantsCountReported !== undefined && (
+                <span className="flex items-center"><Users className="mr-1 h-3 w-3" /> {report.participantsCountReported} Participants</span>
+            )}
+            <span className="flex items-center"><UserCircle className="mr-1 h-3 w-3" /> By: {report.submittedBy}</span>
+            <span className="flex items-center"><CalendarDays className="mr-1 h-3 w-3" />Submitted: {new Date(report.submissionDate).toLocaleDateString()}</span>
+        </div>
+         {report.financialSummary && (
+            <div className="mt-1.5 pt-1.5 border-t border-dashed">
                 <h4 className="text-xs font-semibold text-foreground">Financial Summary:</h4>
-                <p className="text-xs text-muted-foreground line-clamp-2">{report.financialSummary}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{report.financialSummary}</p>
+            </div>
+        )}
+         {report.amountUsed !== undefined && report.amountUsed > 0 && (
+             <div className="mt-1 text-xs text-muted-foreground">
+                Amount Used: <span className="font-medium text-foreground">{report.amountUsed} {report.currency}</span>
             </div>
         )}
       </CardContent>
-      <CardFooter className="pt-3">
+      <CardFooter className="pt-2 pb-3">
         <Button onClick={() => onViewDetails(report.id)} variant="outline" size="sm" className="w-full">
           <Eye className="mr-2 h-4 w-4" /> View Details
         </Button>
-        {/* Add Edit/Delete buttons here if needed with appropriate icons */}
       </CardFooter>
     </Card>
   );

@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIcon, Globe } from "lucide-react"; // Added icons
+import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIcon, Globe, CalendarDays, Type, Users, Hash, DollarSign, Speaker, UserCheck } from "lucide-react"; // Added icons
 import type { Report } from "@/lib/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -26,6 +26,7 @@ import {
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
+import { format } from "date-fns";
 
 
 type ViewMode = "table" | "grid";
@@ -46,22 +47,18 @@ export default function ViewReportsPage() {
   }, [isMobile]);
   
   useEffect(() => {
-    // Handle direct navigation with hash for report ID
     const hash = window.location.hash.substring(1);
     if (hash) {
       const report = mockReports.find(r => r.id === hash);
       if (report) {
         setSelectedReport(report);
         setIsModalOpen(true);
-        // Optionally, clear the hash to prevent re-opening on refresh
-        // window.location.hash = ''; 
       }
     }
   }, []);
 
 
   const dateFilteredReports = useMemo(() => {
-    // Ensure submissionDate is used for filtering reports
     return applyDateFilter(mockReports.map(r => ({...r, date: r.submissionDate})), dateFilter) as Report[];
   }, [dateFilter]);
 
@@ -72,6 +69,8 @@ export default function ViewReportsPage() {
       
       const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (report.thematic && report.thematic.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            (report.activityType && report.activityType.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (report.submittedBy && report.submittedBy.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (siteName && siteName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (smallGroupName && smallGroupName.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -85,7 +84,7 @@ export default function ViewReportsPage() {
     if (report) {
       setSelectedReport(report);
       setIsModalOpen(true);
-      window.location.hash = reportId; // Add report ID to URL hash
+      window.location.hash = reportId; 
     }
   };
 
@@ -132,7 +131,7 @@ export default function ViewReportsPage() {
             <div className="relative w-full md:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                placeholder="Search reports by title, content, submitter, site or group..."
+                placeholder="Search reports by title, content, type, theme, submitter, site or group..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
@@ -184,7 +183,7 @@ export default function ViewReportsPage() {
       {selectedReport && (
         <Dialog open={isModalOpen} onOpenChange={(isOpen) => {
             setIsModalOpen(isOpen);
-            if (!isOpen) window.location.hash = ''; // Clear hash on close
+            if (!isOpen) window.location.hash = ''; 
         }}>
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col">
             <DialogHeader>
@@ -198,9 +197,54 @@ export default function ViewReportsPage() {
             </DialogHeader>
             <ScrollArea className="flex-grow pr-6 -mr-6"> 
               <div className="py-4 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                    <div className="flex items-center">
+                        <CalendarDays className="mr-2 h-4 w-4 text-primary" />
+                        <strong>Activity Date:</strong>&nbsp;{format(new Date(selectedReport.activityDate), "PPP")}
+                    </div>
+                     <div className="flex items-center">
+                        <Type className="mr-2 h-4 w-4 text-primary" />
+                        <strong>Activity Type:</strong>&nbsp;{selectedReport.activityType}
+                    </div>
+                    <div className="flex items-center md:col-span-2">
+                        <Hash className="mr-2 h-4 w-4 text-primary" />
+                        <strong>Thematic:</strong>&nbsp;{selectedReport.thematic}
+                    </div>
+                    {selectedReport.speaker && (
+                         <div className="flex items-center">
+                            <Speaker className="mr-2 h-4 w-4 text-primary" />
+                            <strong>Speaker:</strong>&nbsp;{selectedReport.speaker}
+                        </div>
+                    )}
+                    {selectedReport.moderator && (
+                        <div className="flex items-center">
+                            <UserCheck className="mr-2 h-4 w-4 text-primary" />
+                            <strong>Moderator:</strong>&nbsp;{selectedReport.moderator}
+                        </div>
+                    )}
+                     {(selectedReport.girlsCount !== undefined || selectedReport.boysCount !== undefined) && (
+                        <div className="flex items-center">
+                            <UsersIcon className="mr-2 h-4 w-4 text-primary" />
+                            <strong>Participants:</strong>&nbsp;
+                            {selectedReport.participantsCountReported || 0}
+                            { (selectedReport.girlsCount !== undefined || selectedReport.boysCount !== undefined) && (
+                                <span className="text-xs text-muted-foreground ml-1">
+                                ({selectedReport.girlsCount || 0} Girls, {selectedReport.boysCount || 0} Boys)
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    {selectedReport.amountUsed !== undefined && (
+                         <div className="flex items-center">
+                            <DollarSign className="mr-2 h-4 w-4 text-primary" />
+                            <strong>Amount Used:</strong>&nbsp;{selectedReport.amountUsed} {selectedReport.currency || ''}
+                        </div>
+                    )}
+                </div>
+                
                 {selectedReport.images && selectedReport.images.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-lg mb-2">Images:</h4>
+                    <h4 className="font-semibold text-lg mb-2 mt-4 pt-4 border-t">Images:</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {selectedReport.images.map((image, index) => (
                          <div key={index} className="relative aspect-video rounded-lg overflow-hidden border group">
@@ -214,12 +258,12 @@ export default function ViewReportsPage() {
                   </div>
                 )}
                 <div>
-                  <h4 className="font-semibold text-lg mb-1">Report Details:</h4>
+                  <h4 className="font-semibold text-lg mb-1 mt-4 pt-4 border-t">Report Narrative:</h4>
                   <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">{selectedReport.content}</p>
                 </div>
                 {selectedReport.financialSummary && (
                    <div>
-                     <h4 className="font-semibold text-lg mb-1">Financial Summary:</h4>
+                     <h4 className="font-semibold text-lg mb-1 mt-4 pt-4 border-t">Additional Financial Notes:</h4>
                      <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">{selectedReport.financialSummary}</p>
                    </div>
                 )}
@@ -235,4 +279,3 @@ export default function ViewReportsPage() {
     </RoleBasedGuard>
   );
 }
-

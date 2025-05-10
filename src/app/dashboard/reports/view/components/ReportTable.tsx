@@ -6,11 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit3, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 
 interface ReportTableProps {
   reports: Report[];
   onViewDetails: (reportId: string) => void;
-  // Add edit/delete handlers if needed
 }
 
 export function ReportTable({ reports, onViewDetails }: ReportTableProps) {
@@ -33,37 +33,34 @@ export function ReportTable({ reports, onViewDetails }: ReportTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[250px]">Title</TableHead>
+            <TableHead className="w-[200px]">Title</TableHead>
+            <TableHead>Activity Date</TableHead>
             <TableHead>Level</TableHead>
+            <TableHead>Activity Type</TableHead>
+            <TableHead className="min-w-[150px]">Thematic</TableHead>
             <TableHead>Submitted By</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead className="text-right w-[120px]">Actions</TableHead>
+            <TableHead>Submission Date</TableHead>
+            <TableHead className="text-right w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {reports.map((report) => (
             <TableRow key={report.id}>
-              <TableCell className="font-medium">{report.title}</TableCell>
+              <TableCell className="font-medium truncate max-w-xs" title={report.title}>{report.title}</TableCell>
+              <TableCell>{format(new Date(report.activityDate), "PP")}</TableCell>
               <TableCell>
                 <Badge variant="outline" className={`${getLevelBadgeColor(report.level)} border-none`}>
                   {report.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>
               </TableCell>
-              <TableCell>{report.submittedBy}</TableCell> {/* Replace with actual user name if available */}
+              <TableCell>{report.activityType}</TableCell>
+              <TableCell className="truncate max-w-xs" title={report.thematic}>{report.thematic}</TableCell>
+              <TableCell>{report.submittedBy}</TableCell> 
               <TableCell>{new Date(report.submissionDate).toLocaleDateString()}</TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => onViewDetails(report.id)} title="View Details">
                   <Eye className="h-4 w-4" />
                 </Button>
-                {/* Example Edit/Delete buttons - implement functionality as needed */}
-                {/* 
-                <Button variant="ghost" size="icon" title="Edit Report">
-                  <Edit3 className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" title="Delete Report">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                */}
               </TableCell>
             </TableRow>
           ))}
