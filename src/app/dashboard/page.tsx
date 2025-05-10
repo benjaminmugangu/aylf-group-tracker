@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROLES } from "@/lib/constants";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { mockActivities, mockMembers, mockReports, mockSites, mockSmallGroups } from "@/lib/mockData";
-import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UserCheck, UserX, CheckCircle, Zap, Loader2, UsersRound, Briefcase } from "lucide-react";
+import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UserCheck, UserX, CheckCircle, Zap, Loader2, UsersRound, Briefcase, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -223,3 +223,4 @@ export default function NationalCoordinatorDashboard() {
     </RoleBasedGuard>
   );
 }
+
