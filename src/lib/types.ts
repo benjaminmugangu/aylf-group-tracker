@@ -32,6 +32,7 @@ export interface Activity {
   siteId?: string;
   smallGroupId?: string;
   participantsCount?: number;
+  imageUrl?: string; // Added for activity image
 }
 
 export interface Member {
@@ -96,3 +97,4 @@ export interface Transaction {
   relatedSiteId?: string; // If related to a specific site (either sender or recipient)
   relatedSmallGroupId?: string; // If related to a specific small group (either sender or recipient)
 }
+

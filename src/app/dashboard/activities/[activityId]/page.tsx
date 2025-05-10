@@ -3,6 +3,7 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image"; // Import next/image
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
@@ -10,10 +11,9 @@ import { mockActivities, mockSites, mockSmallGroups, mockReports } from "@/lib/m
 import type { Activity } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Users, Layers, Tag, CheckCircle, XCircle, Loader2, Info, FileText, Link as LinkIcon } from "lucide-react";
+import { CalendarDays, Users, Layers, Tag, CheckCircle, XCircle, Loader2, Info, FileText, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-// import Image from "next/image"; // Not used currently, but could be for activity images
 
 export default function ActivityDetailPage() {
   const params = useParams();
@@ -76,6 +76,20 @@ export default function ActivityDetailPage() {
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader title={activity.name} description={`Details for activity: ${activity.name}`} icon={Tag} />
+
+      {activity.imageUrl && (
+        <Card className="mb-6 shadow-lg overflow-hidden">
+          <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[2.5/1] lg:aspect-[3/1]">
+            <Image 
+              src={activity.imageUrl} 
+              alt={activity.name} 
+              layout="fill" 
+              objectFit="cover"
+              data-ai-hint="activity banner image" 
+            />
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">

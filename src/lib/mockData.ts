@@ -102,20 +102,20 @@ export const mockSmallGroups: SmallGroup[] = [
 ];
 
 export const mockActivities: Activity[] = [
-  { id: "act_1", name: "Leadership Workshop", description: "National leadership training.", date: "2024-08-15", status: "planned", level: "national", participantsCount: 150 },
-  { id: "act_2", name: "Community Outreach", description: "Beni site local community service.", date: "2024-07-20", status: "executed", level: "site", siteId: "site_beni", participantsCount: 45 },
-  { id: "act_3", name: "Book Study: 'Purpose Driven Life'", description: "Beni Alumni Group weekly study.", date: "2024-07-28", status: "executed", level: "small_group", smallGroupId: "sg_beni_alumni", participantsCount: 12 },
-  { id: "act_4", name: "Mentorship Program Launch", description: "Bukavu site mentorship initiative.", date: "2024-09-01", status: "planned", level: "site", siteId: "site_bukavu", participantsCount: 60 },
-  { id: "act_5", name: "Annual Youth Conference", description: "National gathering for all youth.", date: "2023-12-10", status: "executed", level: "national", participantsCount: 500 },
-  { id: "act_6", name: "Sports Day", description: "Goma site inter-group sports event.", date: "2023-11-05", status: "executed", level: "site", siteId: "site_goma", participantsCount: 80 },
+  { id: "act_1", name: "Leadership Workshop", description: "National leadership training.", date: "2024-08-15", status: "planned", level: "national", participantsCount: 150, imageUrl: "https://picsum.photos/seed/leadershipconf/600/400" },
+  { id: "act_2", name: "Community Outreach", description: "Beni site local community service.", date: "2024-07-20", status: "executed", level: "site", siteId: "site_beni", participantsCount: 45, imageUrl: "https://picsum.photos/seed/communityservice/600/400" },
+  { id: "act_3", name: "Book Study: 'Purpose Driven Life'", description: "Beni Alumni Group weekly study.", date: "2024-07-28", status: "executed", level: "small_group", smallGroupId: "sg_beni_alumni", participantsCount: 12, imageUrl: "https://picsum.photos/seed/bookstudygroup/600/400" },
+  { id: "act_4", name: "Mentorship Program Launch", description: "Bukavu site mentorship initiative.", date: "2024-09-01", status: "planned", level: "site", siteId: "site_bukavu", participantsCount: 60, imageUrl: "https://picsum.photos/seed/mentorshipprogram/600/400" },
+  { id: "act_5", name: "Annual Youth Conference", description: "National gathering for all youth.", date: "2023-12-10", status: "executed", level: "national", participantsCount: 500, imageUrl: "https://picsum.photos/seed/youthconference/600/400" },
+  { id: "act_6", name: "Sports Day", description: "Goma site inter-group sports event.", date: "2023-11-05", status: "executed", level: "site", siteId: "site_goma", participantsCount: 80, imageUrl: "https://picsum.photos/seed/sportsdayevent/600/400" },
   { id: "act_7", name: "Prayer Breakfast", description: "Kinshasa UNIKIN Group monthly meeting.", date: "2024-07-10", status: "cancelled", level: "small_group", smallGroupId: "sg_kinshasa_unikin", participantsCount: 8 },
-  { id: "act_8", name: "Bunia Site Evangelism Training", description: "Training for evangelism in Bunia.", date: "2024-08-10", status: "planned", level: "site", siteId: "site_bunia", participantsCount: 30 },
-  { id: "act_9", name: "Butembo UCG Bible Study", description: "Weekly bible study at UCG Butembo.", date: "2024-07-25", status: "executed", level: "small_group", smallGroupId: "sg_butembo_ucg", participantsCount: 15 },
-  { id: "act_10", name: "Kalemie ISP Leadership Seminar", description: "Leadership seminar for ISP Kalemie students.", date: "2024-09-05", status: "planned", level: "small_group", smallGroupId: "sg_kalemie_isp", participantsCount: 25 },
-  { id: "act_11", name: "Kisangani National Day Celebration", description: "Site event for National Day.", date: "2024-06-30", status: "executed", level: "site", siteId: "site_kisangani", participantsCount: 70 },
-  { id: "act_12", name: "Kolwezi UNIKOL Book Club", description: "Monthly book club at UNIKOL Kolwezi.", date: "2024-07-15", status: "executed", level: "small_group", smallGroupId: "sg_kolwezi_unikol", participantsCount: 10 },
-  { id: "act_13", name: "Lubumbashi UNILU Career Fair", description: "Career fair for UNILU students.", date: "2024-10-10", status: "planned", level: "small_group", smallGroupId: "sg_lubumbashi_unilu", participantsCount: 100 },
-  { id: "act_14", name: "Uvira Community Cleanup", description: "Community cleanup organized by Uvira site.", date: "2024-08-20", status: "planned", level: "site", siteId: "site_uvira", participantsCount: 50 },
+  { id: "act_8", name: "Bunia Site Evangelism Training", description: "Training for evangelism in Bunia.", date: "2024-08-10", status: "planned", level: "site", siteId: "site_bunia", participantsCount: 30, imageUrl: "https://picsum.photos/seed/evangelismtraining/600/400" },
+  { id: "act_9", name: "Butembo UCG Bible Study", description: "Weekly bible study at UCG Butembo.", date: "2024-07-25", status: "executed", level: "small_group", smallGroupId: "sg_butembo_ucg", participantsCount: 15, imageUrl: "https://picsum.photos/seed/biblestudycircle/600/400" },
+  { id: "act_10", name: "Kalemie ISP Leadership Seminar", description: "Leadership seminar for ISP Kalemie students.", date: "2024-09-05", status: "planned", level: "small_group", smallGroupId: "sg_kalemie_isp", participantsCount: 25, imageUrl: "https://picsum.photos/seed/leadershipseminar/600/400" },
+  { id: "act_11", name: "Kisangani National Day Celebration", description: "Site event for National Day.", date: "2024-06-30", status: "executed", level: "site", siteId: "site_kisangani", participantsCount: 70, imageUrl: "https://picsum.photos/seed/nationalday/600/400" },
+  { id: "act_12", name: "Kolwezi UNIKOL Book Club", description: "Monthly book club at UNIKOL Kolwezi.", date: "2024-07-15", status: "executed", level: "small_group", smallGroupId: "sg_kolwezi_unikol", participantsCount: 10, imageUrl: "https://picsum.photos/seed/bookclubmeeting/600/400" },
+  { id: "act_13", name: "Lubumbashi UNILU Career Fair", description: "Career fair for UNILU students.", date: "2024-10-10", status: "planned", level: "small_group", smallGroupId: "sg_lubumbashi_unilu", participantsCount: 100, imageUrl: "https://picsum.photos/seed/careerfair/600/400" },
+  { id: "act_14", name: "Uvira Community Cleanup", description: "Community cleanup organized by Uvira site.", date: "2024-08-20", status: "planned", level: "site", siteId: "site_uvira", participantsCount: 50, imageUrl: "https://picsum.photos/seed/communitycleanup/600/400" },
 ];
 
 export const mockMembers: Member[] = [
@@ -189,7 +189,7 @@ export const mockReports: Report[] = [
     level: "small_group", 
     smallGroupId: "sg_kinshasa_unikin", 
     content: "Monthly prayer breakfast held with 15 students. Focus on academic success and spiritual growth. Event was well-received.",
-    images: [],
+    images: [{ name: "prayer_breakfast.jpg", url: "https://picsum.photos/seed/prayerbreakfast/400/300" }],
     financialSummary: "Cost for breakfast items: $30. Covered by member contributions."
   },
 ];
@@ -320,3 +320,4 @@ mockTransactions.forEach(t => {
         else if (t.recipientEntityType === 'small_group') t.recipientEntityName = mockSmallGroups.find(sg => sg.id === t.recipientEntityId)?.name;
     }
 });
+

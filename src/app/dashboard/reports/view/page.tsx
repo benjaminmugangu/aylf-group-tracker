@@ -5,14 +5,14 @@ import React, { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ReportTable } from "./components/ReportTable";
 import { ReportCard } from "./components/ReportCard";
-import { mockReports } from "@/lib/mockData";
+import { mockReports, mockSites, mockSmallGroups } from "@/lib/mockData"; // Added mockSites and mockSmallGroups
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileSearch, ListFilter, Search, LayoutGrid, List } from "lucide-react";
+import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIcon, Globe } from "lucide-react"; // Added icons
 import type { Report } from "@/lib/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -44,6 +44,21 @@ export default function ViewReportsPage() {
     if (isMobile) setViewMode("grid");
     else setViewMode("table");
   }, [isMobile]);
+  
+  useEffect(() => {
+    // Handle direct navigation with hash for report ID
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      const report = mockReports.find(r => r.id === hash);
+      if (report) {
+        setSelectedReport(report);
+        setIsModalOpen(true);
+        // Optionally, clear the hash to prevent re-opening on refresh
+        // window.location.hash = ''; 
+      }
+    }
+  }, []);
+
 
   const dateFilteredReports = useMemo(() => {
     // Ensure submissionDate is used for filtering reports
@@ -52,12 +67,17 @@ export default function ViewReportsPage() {
 
   const fullyFilteredReports = useMemo(() => {
     return dateFilteredReports.filter(report => {
+      const siteName = report.siteId ? mockSites.find(s => s.id === report.siteId)?.name || '' : '';
+      const smallGroupName = report.smallGroupId ? mockSmallGroups.find(sg => sg.id === report.smallGroupId)?.name || '' : '';
+      
       const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (report.submittedBy && report.submittedBy.toLowerCase().includes(searchTerm.toLowerCase()));
+                            (report.submittedBy && report.submittedBy.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            (siteName && siteName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            (smallGroupName && smallGroupName.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesLevel = levelFilter === "all" || report.level === levelFilter;
       return matchesSearch && matchesLevel;
-    });
+    }).sort((a,b) => new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime());
   }, [searchTerm, levelFilter, dateFilteredReports]);
 
   const handleViewDetails = (reportId: string) => {
@@ -65,8 +85,34 @@ export default function ViewReportsPage() {
     if (report) {
       setSelectedReport(report);
       setIsModalOpen(true);
+      window.location.hash = reportId; // Add report ID to URL hash
     }
   };
+
+  const getReportContextName = (report: Report): string | null => {
+    if (report.level === "site" && report.siteId) {
+      return mockSites.find(s => s.id === report.siteId)?.name || null;
+    }
+    if (report.level === "small_group" && report.smallGroupId) {
+      const sg = mockSmallGroups.find(s => s.id === report.smallGroupId);
+      if (sg) {
+        const site = mockSites.find(s => s.id === sg.siteId);
+        return `${sg.name}${site ? ` (${site.name})` : ''}`;
+      }
+      return null;
+    }
+    return null;
+  };
+
+  const getLevelIcon = (level: Report["level"]) => {
+    switch(level) {
+      case "national": return <Globe className="mr-1 h-3.5 w-3.5"/>;
+      case "site": return <Building className="mr-1 h-3.5 w-3.5"/>;
+      case "small_group": return <UsersIcon className="mr-1 h-3.5 w-3.5"/>;
+      default: return null;
+    }
+  }
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
@@ -86,7 +132,7 @@ export default function ViewReportsPage() {
             <div className="relative w-full md:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                placeholder="Search reports..."
+                placeholder="Search reports by title, content, submitter, site or group..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
@@ -136,39 +182,51 @@ export default function ViewReportsPage() {
       </Card>
 
       {selectedReport && (
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <Dialog open={isModalOpen} onOpenChange={(isOpen) => {
+            setIsModalOpen(isOpen);
+            if (!isOpen) window.location.hash = ''; // Clear hash on close
+        }}>
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-2xl">{selectedReport.title}</DialogTitle>
-              <DialogDescription>
-                Level: {selectedReport.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} | Submitted by: {selectedReport.submittedBy} on {new Date(selectedReport.submissionDate).toLocaleDateString()}
+              <DialogDescription className="flex items-center text-sm">
+                {getLevelIcon(selectedReport.level)}
+                {selectedReport.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {getReportContextName(selectedReport) && ` - ${getReportContextName(selectedReport)}`}
+                 | Submitted by: {selectedReport.submittedBy} on {new Date(selectedReport.submissionDate).toLocaleDateString()}
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="flex-grow pr-6 -mr-6"> 
-              <div className="py-4 space-y-4">
+              <div className="py-4 space-y-6">
                 {selectedReport.images && selectedReport.images.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {selectedReport.images.map((image, index) => (
-                       <div key={index} className="relative aspect-video rounded-lg overflow-hidden border">
-                         <Image src={image.url} alt={image.name} layout="fill" objectFit="contain" data-ai-hint="report detail image" />
-                       </div>
-                    ))}
+                  <div>
+                    <h4 className="font-semibold text-lg mb-2">Images:</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {selectedReport.images.map((image, index) => (
+                         <div key={index} className="relative aspect-video rounded-lg overflow-hidden border group">
+                           <Image src={image.url} alt={image.name} layout="fill" objectFit="cover" data-ai-hint="report detail image" className="group-hover:scale-105 transition-transform duration-300"/>
+                           <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <a href={image.url} target="_blank" rel="noopener noreferrer" className="text-white text-xs bg-black/50 px-2 py-1 rounded">View Full Image</a>
+                           </div>
+                         </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <div>
                   <h4 className="font-semibold text-lg mb-1">Report Details:</h4>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedReport.content}</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">{selectedReport.content}</p>
                 </div>
                 {selectedReport.financialSummary && (
                    <div>
                      <h4 className="font-semibold text-lg mb-1">Financial Summary:</h4>
-                     <p className="text-sm text-foreground whitespace-pre-wrap">{selectedReport.financialSummary}</p>
+                     <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">{selectedReport.financialSummary}</p>
                    </div>
                 )}
               </div>
             </ScrollArea>
             <DialogFooter className="mt-auto pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+              <Button variant="outline" onClick={() => {setIsModalOpen(false); window.location.hash = '';}}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -177,3 +235,4 @@ export default function ViewReportsPage() {
     </RoleBasedGuard>
   );
 }
+
