@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, DollarSign, TrendingUp, TrendingDown, Send, Landmark, Download } from "lucide-react";
+import { Briefcase, DollarSign, TrendingUp, TrendingDown, Send, Landmark, Download, PlusCircle } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { mockTransactions, mockSites } from "@/lib/mockData"; 
 import type { Transaction } from "@/lib/types";
@@ -80,6 +80,14 @@ export default function FinancesPage() {
       amountColor = "text-blue-600 dark:text-blue-400"; 
       amountPrefix = "-"; 
     } else {
+      // For other site/sg level transactions if they were to appear here (though filtered to national)
+      if (txn.transactionType === 'income_source' || (txn.transactionType === 'transfer' && txn.recipientEntityType !== 'national')) {
+         amountColor = "text-green-600 dark:text-green-400";
+         amountPrefix = "+";
+      } else {
+         amountColor = "text-red-600 dark:text-red-400";
+         amountPrefix = "-";
+      }
       details = txn.description; 
     }
     return { displayDetails: details, amountColor, amountPrefix };
@@ -109,9 +117,16 @@ export default function FinancesPage() {
         description={`Manage and track financial data for AYLF National Coordination. Current filter: ${dateFilter.display}`}
         icon={Briefcase}
         actions={
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" /> Export Summary
-          </Button>
+          <div className="flex gap-2">
+            <Link href="/dashboard/finances/transactions/new" passHref>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" /> Record Transaction
+              </Button>
+            </Link>
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" /> Export Summary
+            </Button>
+          </div>
         }
       />
 
@@ -216,6 +231,12 @@ export default function FinancesPage() {
           <p className="text-muted-foreground">
             Detailed financial reporting features are under development. Full statements, export options, and advanced analytics will be available soon.
           </p>
+          {/* Placeholder for future "Generate Report" button */}
+          {/* 
+          <Button className="mt-4" disabled>
+            <Download className="mr-2 h-4 w-4" /> Generate Financial Statement (Coming Soon)
+          </Button> 
+          */}
         </CardContent>
       </Card>
 

@@ -5,13 +5,14 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UsersRound, UserPlus, Edit, Trash2, ShieldCheck } from "lucide-react";
+import { UsersRound, UserPlus, Edit, Trash2, ShieldCheck, ShieldX } from "lucide-react"; // Added ShieldX for inactive
 import { Button } from "@/components/ui/button";
 import { mockUsers, mockSites, mockSmallGroups } from "@/lib/mockData";
 import type { User, Role } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export default function ManageUsersPage() {
 
@@ -21,9 +22,9 @@ export default function ManageUsersPage() {
 
   const getRoleBadgeVariant = (role: Role) => {
     switch(role) {
-      case ROLES.NATIONAL_COORDINATOR: return "default"; // Primary
+      case ROLES.NATIONAL_COORDINATOR: return "default"; 
       case ROLES.SITE_COORDINATOR: return "secondary";
-      case ROLES.SMALL_GROUP_LEADER: return "outline"; // A different style
+      case ROLES.SMALL_GROUP_LEADER: return "outline"; 
       default: return "outline";
     }
   };
@@ -50,6 +51,15 @@ export default function ManageUsersPage() {
     }
     return name.substring(0, 2).toUpperCase();
   };
+  
+  const getUserStatusIcon = (status?: "active" | "inactive") => {
+    return status === "inactive" ? <ShieldX className="h-3 w-3 text-destructive" /> : <ShieldCheck className="h-3 w-3 text-green-500"/>;
+  }
+  
+  const getUserStatusBadgeVariant = (status?: "active" | "inactive") => {
+     return status === "inactive" ? "destructive" : "default"
+  }
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
@@ -58,9 +68,11 @@ export default function ManageUsersPage() {
         description="Administer user accounts, roles, and permissions within AYLF."
         icon={UsersRound}
         actions={
-          <Button>
-            <UserPlus className="mr-2 h-4 w-4" /> Add New User
-          </Button>
+          <Link href="/dashboard/users/new" passHref>
+            <Button>
+              <UserPlus className="mr-2 h-4 w-4" /> Add New User
+            </Button>
+          </Link>
         }
       />
       
@@ -78,7 +90,8 @@ export default function ManageUsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Assignment</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -101,11 +114,19 @@ export default function ManageUsersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{getAssignment(user)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" title="Edit User">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" title="Delete User" className="text-destructive hover:text-destructive-foreground hover:bg-destructive">
+                    <TableCell>
+                       <Badge variant={getUserStatusBadgeVariant(user.status)} className="gap-1 items-center text-xs px-1.5 py-0.5">
+                        {getUserStatusIcon(user.status)}
+                        {user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : "Active"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Link href={`/dashboard/users/${user.id}/edit`} passHref>
+                        <Button variant="ghost" size="icon" title="Edit User">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button variant="ghost" size="icon" title="Delete User (Not Implemented)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

@@ -11,7 +11,7 @@ import { mockActivities, mockSites, mockSmallGroups, mockReports } from "@/lib/m
 import type { Activity } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Users, Layers, Tag, CheckCircle, XCircle, Loader2, Info, FileText, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
+import { CalendarDays, Users, Layers, Tag, CheckCircle, XCircle, Loader2, Info, FileText, Link as LinkIcon, Image as ImageIcon, Edit } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -75,7 +75,18 @@ export default function ActivityDetailPage() {
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
-      <PageHeader title={activity.name} description={`Details for activity: ${activity.name}`} icon={Tag} />
+      <PageHeader 
+        title={activity.name} 
+        description={`Details for activity: ${activity.name}`} 
+        icon={Tag}
+        actions={
+          <Link href={`/dashboard/activities/${activity.id}/edit`} passHref>
+            <Button variant="outline">
+              <Edit className="mr-2 h-4 w-4" /> Edit Activity
+            </Button>
+          </Link>
+        }
+      />
 
       {activity.imageUrl && (
         <Card className="mb-6 shadow-lg overflow-hidden">

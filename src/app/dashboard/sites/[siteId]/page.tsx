@@ -11,7 +11,7 @@ import { mockSites, mockSmallGroups, mockUsers, mockMembers } from "@/lib/mockDa
 import type { Site, SmallGroup as SmallGroupType } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building, Users, UserCircle, Eye, Info, Edit, Trash2 } from "lucide-react";
+import { Building, Users, UserCircle, Eye, Info, Edit, Trash2, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -89,7 +89,27 @@ export default function SiteDetailPage() {
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
-      <PageHeader title={site.name} description={`Details for site: ${site.name}`} icon={Building} />
+      <PageHeader 
+        title={site.name} 
+        description={`Details for site: ${site.name}`} 
+        icon={Building}
+        actions={
+          // TODO: Add actual edit/delete functionality for National Coordinator
+          // Site coordinators should not see these buttons for the site itself on this page.
+          // They can edit their *own* profile, and manage SGs within their site.
+          ROLES.NATIONAL_COORDINATOR === mockUsers.find(u=>u.id === site.coordinatorId)?.role ? ( // A simple check for NC
+             <div className="flex gap-2">
+              {/* TODO: Link to /dashboard/sites/[siteId]/edit when form is created */}
+              <Button variant="outline" disabled> 
+                <Edit className="mr-2 h-4 w-4" /> Edit Site
+              </Button>
+              <Button variant="destructive" disabled>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete Site
+              </Button>
+            </div>
+          ) : null
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card className="md:col-span-1 shadow-lg">
@@ -141,9 +161,15 @@ export default function SiteDetailPage() {
       
 
       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Small Groups in {site.name}</CardTitle>
-          <CardDescription>List of small groups operating under this site.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Small Groups in {site.name}</CardTitle>
+            <CardDescription>List of small groups operating under this site.</CardDescription>
+          </div>
+          {/* TODO: Link to /dashboard/sites/[siteId]/small-groups/new when form is created */}
+          <Button variant="outline" disabled>
+            <PlusCircle className="mr-2 h-4 w-4"/> Add Small Group
+          </Button>
         </CardHeader>
         <CardContent>
           {smallGroups.length > 0 ? (
@@ -154,7 +180,7 @@ export default function SiteDetailPage() {
                     <TableHead>Small Group Name</TableHead>
                     <TableHead>Leader</TableHead>
                     <TableHead>Members</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right w-[150px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -171,15 +197,15 @@ export default function SiteDetailPage() {
                         </div>
                       </TableCell>
                       <TableCell>{sg.membersCount}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-1">
                         {/* Future: Link to small group detail page */}
-                        <Button variant="ghost" size="icon" title="View Small Group Details (Future)">
+                        <Button variant="ghost" size="icon" title="View Small Group Details (Future)" disabled>
                           <Eye className="h-4 w-4" />
                         </Button>
-                         <Button variant="ghost" size="icon" title="Edit Small Group (Future)">
+                         <Button variant="ghost" size="icon" title="Edit Small Group (Future)" disabled>
                           <Edit className="h-4 w-4" />
                         </Button>
-                         <Button variant="ghost" size="icon" title="Delete Small Group (Future)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive">
+                         <Button variant="ghost" size="icon" title="Delete Small Group (Future)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>

@@ -68,7 +68,8 @@ export default function ManageSitesPage() {
     );
   }, []);
   
-  const getCoordinatorName = (coordinatorId: string) => {
+  const getCoordinatorName = (coordinatorId?: string) => {
+    if (!coordinatorId) return "N/A";
     const coordinator = mockUsers.find(user => user.id === coordinatorId);
     return coordinator ? coordinator.name : "N/A";
   };
@@ -89,7 +90,8 @@ export default function ManageSitesPage() {
         description="Oversee all AYLF operational sites, their coordinators, and performance."
         icon={Building}
         actions={
-          <Button>
+          // TODO: Link to /dashboard/sites/new when form is created
+          <Button disabled> 
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Site
           </Button>
         }
@@ -109,7 +111,7 @@ export default function ManageSitesPage() {
                   <TableHead>Coordinator</TableHead>
                   <TableHead>Total Members</TableHead>
                   <TableHead>Active Small Groups</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right w-[150px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -127,16 +129,17 @@ export default function ManageSitesPage() {
                     </TableCell>
                     <TableCell>{site.membersCount}</TableCell>
                     <TableCell>{site.smallGroupsCount}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-1">
                       <Link href={`/dashboard/sites/${site.id}`} passHref>
                         <Button variant="ghost" size="icon" title="View Details">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="icon" title="Edit Site">
+                      {/* TODO: Link to /dashboard/sites/[siteId]/edit when form is created */}
+                      <Button variant="ghost" size="icon" title="Edit Site" disabled>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" title="Delete Site" className="text-destructive hover:text-destructive-foreground hover:bg-destructive">
+                      <Button variant="ghost" size="icon" title="Delete Site" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

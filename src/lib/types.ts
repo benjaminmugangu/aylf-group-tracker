@@ -9,19 +9,20 @@ export interface User {
   smallGroupId?: string;
   mandateStartDate?: string; // ISO date string
   mandateEndDate?: string;   // ISO date string, if ended
+  status?: "active" | "inactive"; // Added for user management
 }
 
 export interface Site {
   id: string;
   name:string;
-  coordinatorId: string; // Current coordinator
+  coordinatorId?: string; // Current coordinator - made optional for creation
 }
 
 export interface SmallGroup {
   id: string;
   name: string;
   siteId: string;
-  leaderId: string; // Current leader
+  leaderId?: string; // Current leader - made optional for creation
 }
 
 export interface Activity {
@@ -44,6 +45,7 @@ export interface Member {
   siteId?: string;
   smallGroupId?: string;
   joinDate: string; // ISO date string
+  date?: string; // For consistency with date filtering helper
 }
 
 export type ReportStatus = "submitted" | "approved" | "rejected";
@@ -113,3 +115,50 @@ export interface Transaction {
   relatedSmallGroupId?: string; 
 }
 
+// FormData Types
+export interface ActivityFormData {
+  name: string;
+  description: string;
+  date: Date;
+  status: "planned" | "executed" | "cancelled";
+  level: "national" | "site" | "small_group";
+  siteId?: string;
+  smallGroupId?: string;
+  participantsCount?: number;
+  imageUrl?: string;
+}
+
+export interface MemberFormData {
+  name: string;
+  type: "student" | "non-student";
+  siteId?: string;
+  smallGroupId?: string;
+  joinDate: Date;
+}
+
+export interface UserFormData {
+  name: string;
+  email: string;
+  role: Role;
+  siteId?: string;
+  smallGroupId?: string;
+  mandateStartDate?: Date;
+  mandateEndDate?: Date;
+  status?: "active" | "inactive";
+}
+
+export interface TransactionFormData {
+  date: Date;
+  amount: number;
+  description: string;
+  transactionType: 'transfer' | 'expense' | 'income_source';
+  senderEntityType: 'national' | 'site' | 'small_group' | 'external_donor';
+  senderEntityId: string;
+  senderEntityName?: string;
+  recipientEntityType: 'national' | 'site' | 'small_group' | 'vendor' | 'beneficiary' | 'other';
+  recipientEntityId: string;
+  recipientEntityName?: string;
+  level: 'national' | 'site' | 'small_group'; // Usually determined by context or selected
+  relatedSiteId?: string;
+  relatedSmallGroupId?: string;
+}

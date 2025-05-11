@@ -10,7 +10,7 @@ import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge"; 
-import { Users, UserPlus, ListFilter, Search, Eye } from "lucide-react";
+import { Users, UserPlus, ListFilter, Search, Eye, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -56,9 +56,11 @@ export default function MembersPage() {
         description={`View and manage members. Filter: ${dateFilter.display}`}
         icon={Users}
         actions={
-          <Button>
-            <UserPlus className="mr-2 h-4 w-4" /> Add New Member
-          </Button>
+          <Link href="/dashboard/members/new" passHref>
+            <Button>
+              <UserPlus className="mr-2 h-4 w-4" /> Add New Member
+            </Button>
+          </Link>
         }
       />
       
@@ -114,7 +116,7 @@ export default function MembersPage() {
                   <TableHead>Site</TableHead>
                   <TableHead>Small Group</TableHead>
                   <TableHead>Join Date</TableHead>
-                  <TableHead className="text-right w-[100px]">Actions</TableHead>
+                  <TableHead className="text-right w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -129,10 +131,15 @@ export default function MembersPage() {
                     <TableCell>{getSiteName(member.siteId)}</TableCell>
                     <TableCell>{getSmallGroupName(member.smallGroupId)}</TableCell>
                     <TableCell>{new Date(member.joinDate).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-1">
                       <Link href={`/dashboard/members/${member.id}`} passHref>
                         <Button variant="ghost" size="icon" title="View Details">
                           <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/members/${member.id}/edit`} passHref>
+                        <Button variant="ghost" size="icon" title="Edit Member">
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </Link>
                     </TableCell>

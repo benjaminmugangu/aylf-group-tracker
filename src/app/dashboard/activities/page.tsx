@@ -9,7 +9,7 @@ import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge"; 
-import { Activity as ActivityIcon, ListFilter, Search, Eye } from "lucide-react"; 
+import { Activity as ActivityIcon, ListFilter, Search, Eye, Edit, PlusCircle } from "lucide-react"; 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -71,6 +71,13 @@ export default function ActivitiesPage() {
         title="Activity Management"
         description={`View and manage activities. Filter: ${dateFilter.display}`}
         icon={ActivityIcon}
+        actions={
+          <Link href="/dashboard/activities/new" passHref>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" /> Create New Activity
+            </Button>
+          </Link>
+        }
       />
       
       <div className="mb-6">
@@ -136,7 +143,7 @@ export default function ActivitiesPage() {
                   <TableHead>Level</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Participants</TableHead>
-                  <TableHead className="text-right w-[100px]">Actions</TableHead>
+                  <TableHead className="text-right w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -155,10 +162,15 @@ export default function ActivitiesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">{activity.participantsCount !== undefined ? activity.participantsCount : "N/A"}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-1">
                       <Link href={`/dashboard/activities/${activity.id}`} passHref>
                         <Button variant="ghost" size="icon" title="View Details">
                           <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/activities/${activity.id}/edit`} passHref>
+                        <Button variant="ghost" size="icon" title="Edit Activity">
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </Link>
                     </TableCell>
