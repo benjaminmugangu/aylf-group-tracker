@@ -90,10 +90,11 @@ export default function ManageSitesPage() {
         description="Oversee all AYLF operational sites, their coordinators, and performance."
         icon={Building}
         actions={
-          // TODO: Link to /dashboard/sites/new when form is created
-          <Button disabled> 
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Site
-          </Button>
+          <Link href="/dashboard/sites/new" passHref>
+            <Button> 
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Site
+            </Button>
+          </Link>
         }
       />
       

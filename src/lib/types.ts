@@ -162,3 +162,8 @@ export interface TransactionFormData {
   relatedSiteId?: string;
   relatedSmallGroupId?: string;
 }
+
+export interface SiteFormData {
+  name: string;
+  coordinatorId?: string;
+}
