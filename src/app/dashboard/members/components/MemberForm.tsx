@@ -31,6 +31,8 @@ const memberFormSchema = z.object({
   return true;
 }, { message: "Site selection is required if a small group is selected.", path: ["siteId"]});
 
+const NO_SITE_VALUE = "__NO_SITE_VALUE__";
+const NO_SMALL_GROUP_VALUE = "__NO_SMALL_GROUP_VALUE__";
 
 interface MemberFormProps {
   member?: Member; // For editing
@@ -131,7 +133,7 @@ export function MemberForm({ member, onSubmitForm }: MemberFormProps) {
                 name="type"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger id="type" className="mt-1">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -177,20 +179,21 @@ export function MemberForm({ member, onSubmitForm }: MemberFormProps) {
               control={control}
               render={({ field }) => (
                 <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    if (currentUser?.role !== ROLES.SMALL_GROUP_LEADER || value !== currentUser.siteId) {
+                  onValueChange={(valueFromSelect) => {
+                    const actualValueToSet = valueFromSelect === NO_SITE_VALUE ? undefined : valueFromSelect;
+                    field.onChange(actualValueToSet);
+                    if (currentUser?.role !== ROLES.SMALL_GROUP_LEADER || actualValueToSet !== currentUser.siteId) {
                        setValue("smallGroupId", undefined);
                     }
                   }} 
-                  defaultValue={field.value} 
+                  value={field.value ?? ""} 
                   disabled={!canChangeSite}
                 >
                   <SelectTrigger id="siteId" className="mt-1">
                     <SelectValue placeholder="Select site (Optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Specific Site</SelectItem>
+                    <SelectItem value={NO_SITE_VALUE}>No Specific Site</SelectItem>
                     {availableSites.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -206,12 +209,18 @@ export function MemberForm({ member, onSubmitForm }: MemberFormProps) {
                 name="smallGroupId"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!canChangeSmallGroup || availableSmallGroups.length === 0}>
+                  <Select 
+                    onValueChange={(valueFromSelect) => {
+                       const actualValueToSet = valueFromSelect === NO_SMALL_GROUP_VALUE ? undefined : valueFromSelect;
+                       field.onChange(actualValueToSet);
+                    }} 
+                    value={field.value ?? ""} 
+                    disabled={!canChangeSmallGroup || availableSmallGroups.length === 0}>
                     <SelectTrigger id="smallGroupId" className="mt-1">
                       <SelectValue placeholder="Select small group (Optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Specific Small Group</SelectItem>
+                      <SelectItem value={NO_SMALL_GROUP_VALUE}>No Specific Small Group</SelectItem>
                       {availableSmallGroups.map(sg => <SelectItem key={sg.id} value={sg.id}>{sg.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
