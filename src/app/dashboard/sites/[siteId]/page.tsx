@@ -15,6 +15,7 @@ import { Building, Users, UserCircle, Eye, Info, Edit, Trash2, PlusCircle } from
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth"; // Added useAuth
 
 interface SmallGroupWithCounts extends SmallGroupType {
   membersCount: number;
@@ -24,6 +25,7 @@ export default function SiteDetailPage() {
   const params = useParams();
   const router = useRouter();
   const siteId = params.siteId as string;
+  const { currentUser } = useAuth(); // Get current user
 
   const [site, setSite] = useState<Site | null>(null);
   const [smallGroups, setSmallGroups] = useState<SmallGroupWithCounts[]>([]);
@@ -86,6 +88,10 @@ export default function SiteDetailPage() {
   }
   
   const siteCoordinator = mockUsers.find(user => user.id === site.coordinatorId);
+  const canManageSite = currentUser?.role === ROLES.NATIONAL_COORDINATOR;
+  // Site coordinator can manage SGs within their own site.
+  const canManageSmallGroups = currentUser?.role === ROLES.NATIONAL_COORDINATOR || (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser?.siteId === site.id);
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
@@ -94,15 +100,13 @@ export default function SiteDetailPage() {
         description={`Details for site: ${site.name}`} 
         icon={Building}
         actions={
-          // TODO: Add actual edit/delete functionality for National Coordinator
-          // Site coordinators should not see these buttons for the site itself on this page.
-          // They can edit their *own* profile, and manage SGs within their site.
-          ROLES.NATIONAL_COORDINATOR === mockUsers.find(u=>u.id === site.coordinatorId)?.role ? ( // A simple check for NC
+          canManageSite ? (
              <div className="flex gap-2">
-              {/* TODO: Link to /dashboard/sites/[siteId]/edit when form is created */}
-              <Button variant="outline" disabled> 
-                <Edit className="mr-2 h-4 w-4" /> Edit Site
-              </Button>
+              <Link href={`/dashboard/sites/${site.id}/edit`} passHref>
+                <Button variant="outline"> 
+                  <Edit className="mr-2 h-4 w-4" /> Edit Site
+                </Button>
+              </Link>
               <Button variant="destructive" disabled>
                 <Trash2 className="mr-2 h-4 w-4" /> Delete Site
               </Button>
@@ -166,10 +170,12 @@ export default function SiteDetailPage() {
             <CardTitle>Small Groups in {site.name}</CardTitle>
             <CardDescription>List of small groups operating under this site.</CardDescription>
           </div>
-          {/* TODO: Link to /dashboard/sites/[siteId]/small-groups/new when form is created */}
-          <Button variant="outline" disabled>
-            <PlusCircle className="mr-2 h-4 w-4"/> Add Small Group
-          </Button>
+          {canManageSmallGroups && (
+            // TODO: Link to /dashboard/sites/[siteId]/small-groups/new when form is created
+            <Button variant="outline" disabled>
+              <PlusCircle className="mr-2 h-4 w-4"/> Add Small Group
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {smallGroups.length > 0 ? (
@@ -190,7 +196,7 @@ export default function SiteDetailPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                            <Avatar className="h-8 w-8">
-                            <AvatarImage src={`https://avatar.vercel.sh/${getLeaderName(sg.leaderId)}.png`} alt={getLeaderName(sg.leaderId)} data-ai-hint="leader avatar" />
+                            <AvatarImage src={`https://avatar.vercel.sh/${getLeaderName(sg.leaderId)}.png`} alt={getLeaderName(sg.leaderId)} data-ai-hint="leader avatar"/>
                             <AvatarFallback>{getLeaderInitials(getLeaderName(sg.leaderId))}</AvatarFallback>
                           </Avatar>
                           <span>{getLeaderName(sg.leaderId)}</span>
@@ -202,12 +208,18 @@ export default function SiteDetailPage() {
                         <Button variant="ghost" size="icon" title="View Small Group Details (Future)" disabled>
                           <Eye className="h-4 w-4" />
                         </Button>
-                         <Button variant="ghost" size="icon" title="Edit Small Group (Future)" disabled>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                         <Button variant="ghost" size="icon" title="Delete Small Group (Future)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {canManageSmallGroups && (
+                          <>
+                            <Link href={`/dashboard/sites/${siteId}/small-groups/${sg.id}/edit`} passHref>
+                              <Button variant="ghost" size="icon" title="Edit Small Group">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button variant="ghost" size="icon" title="Delete Small Group (Future)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -136,11 +136,12 @@ export default function ManageSitesPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      {/* TODO: Link to /dashboard/sites/[siteId]/edit when form is created */}
-                      <Button variant="ghost" size="icon" title="Edit Site" disabled>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" title="Delete Site" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
+                      <Link href={`/dashboard/sites/${site.id}/edit`} passHref>
+                        <Button variant="ghost" size="icon" title="Edit Site">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button variant="ghost" size="icon" title="Delete Site (Not Implemented)" className="text-destructive hover:text-destructive-foreground hover:bg-destructive" disabled>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
