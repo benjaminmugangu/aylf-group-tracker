@@ -7,39 +7,40 @@ import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES, APP_NAME } from "@/lib/constants";
 import { mockUsers, mockSites, mockSmallGroups } from "@/lib/mockData";
 import type { User } from "@/lib/types";
-import { Award, Printer, UserSquare2, CalendarCheck2, ListFilter } from "lucide-react";
+import { Award, Printer, UserSquare2, ListFilter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { PrintableCertificate } from "./components/PrintableCertificate";
 import { Badge } from "@/components/ui/badge";
-import { format, getYear, startOfYear, endOfYear, subYears } from "date-fns";
+import { format, startOfYear, endOfYear } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-
-type AnnualFilterKey = "all_time" | "this_year" | "last_year";
-
 interface AnnualFilterOption {
-  key: AnnualFilterKey;
+  key: string; // Can be "all_time" or a year string like "2023"
   label: string;
 }
 
-const ANNUAL_FILTER_OPTIONS: AnnualFilterOption[] = [
-  { key: "all_time", label: "All Time" },
-  { key: "this_year", label: "This Year" },
-  { key: "last_year", label: "Last Year" },
-];
+const generateAnnualFilterOptions = (): AnnualFilterOption[] => {
+  const options: AnnualFilterOption[] = [{ key: "all_time", label: "All Time" }];
+  const maxYear = 2025; 
+  const minYear = 2000;
+  for (let year = maxYear; year >= minYear; year--) {
+    options.push({ key: year.toString(), label: year.toString() });
+  }
+  return options;
+};
+
+const ANNUAL_FILTER_OPTIONS: AnnualFilterOption[] = generateAnnualFilterOptions();
 
 
 export default function CertificatesPage() {
   const [selectedUserForCertificate, setSelectedUserForCertificate] = useState<User | null>(null);
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
-  const [annualFilter, setAnnualFilter] = useState<AnnualFilterKey>("all_time");
+  const [annualFilter, setAnnualFilter] = useState<string>("all_time"); // string to accommodate years
 
   const coordinatorsAndLeaders = useMemo(() => {
-    const currentYear = getYear(new Date());
-    
     return mockUsers.filter(user => {
       const isLeaderOrCoordinator = user.role === ROLES.SITE_COORDINATOR || user.role === ROLES.SMALL_GROUP_LEADER;
       if (!isLeaderOrCoordinator) return false;
@@ -48,16 +49,22 @@ export default function CertificatesPage() {
         return true;
       }
 
+      const selectedYear = parseInt(annualFilter, 10);
+      if (isNaN(selectedYear)) return true; // Fallback if filter value is not a valid year string
+
+      const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+      const yearEnd = endOfYear(new Date(selectedYear, 0, 1));
+
+      const mandateStartDate = user.mandateStartDate ? new Date(user.mandateStartDate) : null;
       const mandateEndDate = user.mandateEndDate ? new Date(user.mandateEndDate) : null;
 
-      if (annualFilter === "this_year") {
-        // Include if mandate ended this year OR if currently active (no end date)
-        return !mandateEndDate || (mandateEndDate && getYear(mandateEndDate) === currentYear);
-      }
-      if (annualFilter === "last_year") {
-        return mandateEndDate && getYear(mandateEndDate) === currentYear - 1;
-      }
-      return true;
+      if (!mandateStartDate) return false; 
+
+      // Check for overlap: Mandate period must overlap with the selected year.
+      const startsBeforeOrInYear = mandateStartDate <= yearEnd;
+      const endsAfterOrInYearOrIsOngoing = !mandateEndDate || mandateEndDate >= yearStart;
+      
+      return startsBeforeOrInYear && endsAfterOrInYearOrIsOngoing;
     })
     .sort((a,b) => (a.mandateEndDate ? 1 : -1) - (b.mandateEndDate ? 1: -1) || new Date(b.mandateStartDate || 0).getTime() - new Date(a.mandateStartDate || 0).getTime());
   }, [annualFilter]);
@@ -105,7 +112,7 @@ export default function CertificatesPage() {
               </CardDescription>
             </div>
             <div className="mt-4 sm:mt-0">
-                <Select value={annualFilter} onValueChange={(value) => setAnnualFilter(value as AnnualFilterKey)}>
+                <Select value={annualFilter} onValueChange={(value) => setAnnualFilter(value)}>
                     <SelectTrigger className="w-full sm:w-[180px]">
                         <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
                         <SelectValue placeholder="Filter by year" />
@@ -186,7 +193,8 @@ export default function CertificatesPage() {
                     const printWindow = window.open('', '_blank');
                     if(printWindow) {
                         printWindow.document.write('<html><head><title>Print Certificate</title>');
-                        printWindow.document.write('<style> body { margin: 20px; font-family: "Times New Roman", serif; } .certificate-container { border: 5px solid hsl(var(--primary)); padding: 30px; text-align: center; background-color: hsl(var(--background)); position: relative; } .title { font-size: 28px; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 10px; } .subtitle { font-size: 20px; color: hsl(var(--muted-foreground)); margin-bottom: 30px; } .presented-to { font-size: 18px; margin-bottom: 5px; } .user-name { font-size: 24px; font-weight: bold; color: hsl(var(--foreground)); margin-bottom: 20px; } .service-as { font-size: 16px; margin-bottom: 5px; } .role-entity { font-size: 18px; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 20px; } .period { font-size: 16px; margin-bottom: 30px; } .signatures { margin-top: 40px; display: grid; grid-template-columns: 1fr; md:grid-template-columns: 1fr 1fr; gap: 2rem; text-align:center; } .signature-line { border-top: 1px solid hsl(var(--foreground)); width: 200px; margin: 0 auto 5px auto; } .signature-title { font-size: 14px; color: hsl(var(--muted-foreground)); } .footer-text { font-size: 10px; color: hsl(var(--muted-foreground)); margin-top: 40px;} .decorative-corner { position: absolute; width: 3rem; height: 3rem; border-color: hsla(var(--primary) / 0.5); } .decorative-corner.top-left { top: 0.5rem; left: 0.5rem; border-top-width: 2px; border-left-width: 2px; } .decorative-corner.top-right { top: 0.5rem; right: 0.5rem; border-top-width: 2px; border-right-width: 2px; } .decorative-corner.bottom-left { bottom: 0.5rem; left: 0.5rem; border-bottom-width: 2px; border-left-width: 2px; } .decorative-corner.bottom-right { bottom: 0.5rem; right: 0.5rem; border-bottom-width: 2px; border-right-width: 2px; } img.logo { border-radius: 9999px; margin-bottom: 1.5rem; } @media print { body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display: none; } } </style>');
+                        // Simple print styles - consider linking to a separate CSS file for complex styling
+                        printWindow.document.write('<style> body { margin: 20px; font-family: "Times New Roman", serif; } .certificate-container { border: 5px solid hsl(var(--primary)); padding: 30px; text-align: center; background-color: hsl(var(--background)); position: relative; } .title { font-size: 28px; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 10px; } .subtitle { font-size: 20px; color: hsl(var(--muted-foreground)); margin-bottom: 30px; } .presented-to { font-size: 18px; margin-bottom: 5px; } .user-name { font-size: 24px; font-weight: bold; color: hsl(var(--foreground)); margin-bottom: 20px; } .service-as { font-size: 16px; margin-bottom: 5px; } .role-entity { font-size: 18px; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 20px; } .period { font-size: 16px; margin-bottom: 30px; } .signatures { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align:center; align-items:end; } .signature-line { border-top: 1px solid hsl(var(--foreground)); width: 200px; margin: 0 auto 5px auto; } .signature-title { font-size: 14px; color: hsl(var(--muted-foreground)); } .footer-text { font-size: 10px; color: hsl(var(--muted-foreground)); margin-top: 40px;} img.logo { border-radius: 9999px; margin-bottom: 1.5rem; } .decorative-corner { position: absolute; width: 3rem; height: 3rem; border-color: hsla(var(--primary) / 0.5); } .decorative-corner.top-left { top: 0.5rem; left: 0.5rem; border-top-width: 2px; border-left-width: 2px; } .decorative-corner.top-right { top: 0.5rem; right: 0.5rem; border-top-width: 2px; border-right-width: 2px; } .decorative-corner.bottom-left { bottom: 0.5rem; left: 0.5rem; border-bottom-width: 2px; border-left-width: 2px; } .decorative-corner.bottom-right { bottom: 0.5rem; right: 0.5rem; border-bottom-width: 2px; border-right-width: 2px; } @media print { body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display: none; } .signatures { grid-template-columns: 1fr 1fr !important; } } </style>');
                         printWindow.document.write('</head><body>');
                         printWindow.document.write(printableContent.innerHTML);
                         printWindow.document.write('</body></html>');
@@ -205,3 +213,4 @@ export default function CertificatesPage() {
     </RoleBasedGuard>
   );
 }
+
