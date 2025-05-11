@@ -4,22 +4,22 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SmallGroupForm, type SmallGroupFormData } from "../../../components/SmallGroupForm";
+import { SmallGroupForm, type SmallGroupFormData } from "../../../../components/SmallGroupForm"; // Corrected path
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
-import { ROLES }_INDICATOR from "@/lib/constants";
-import { mockSites, mockSmallGroups, mockUsers }_INDICATOR from "@/lib/mockData";
-import type { SmallGroup as SmallGroupType, User }_INDICATOR from "@/lib/types";
-import { Edit, Info, Users }_INDICATOR from "lucide-react";
-import { useToast }_INDICATOR from "@/hooks/use-toast";
-import { Card, CardContent }_INDICATOR from "@/components/ui/card";
-import { Button }_INDICATOR from "@/components/ui/button";
-import { useAuth }_INDICATOR from "@/hooks/useAuth";
+import { ROLES } from "@/lib/constants";
+import { mockSites, mockSmallGroups, mockUsers } from "@/lib/mockData";
+import type { SmallGroup as SmallGroupType, User } from "@/lib/types";
+import { Edit, Info, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function EditSmallGroupPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast }_INDICATOR = useToast();
-  const { currentUser }_INDICATOR = useAuth();
+  const { toast } = useToast();
+  const { currentUser } = useAuth();
 
   const siteId = params.siteId as string;
   const smallGroupId = params.smallGroupId as string;
@@ -68,7 +68,7 @@ export default function EditSmallGroupPage() {
     // Update small group in mockSmallGroups
     const sgIndex = mockSmallGroups.findIndex(sg => sg.id === smallGroupId);
     if (sgIndex !== -1) {
-      mockSmallGroups[sgIndex] = { ...mockSmallGroups[sgIndex], ...data };
+      mockSmallGroups[sgIndex] = { ...mockSmallGroups[sgIndex], ...data, siteId: siteId }; // Ensure siteId is part of data
     }
 
     console.log("Small Group Updated (mock):", mockSmallGroups[sgIndex]);
@@ -131,4 +131,3 @@ export default function EditSmallGroupPage() {
     </RoleBasedGuard>
   );
 }
-
