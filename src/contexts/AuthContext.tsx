@@ -46,42 +46,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     let userToLogin: User | undefined;
 
-    if (details?.userId) { // Prioritize specific user if ID is given
-      userToLogin = mockUsers.find(u => u.id === details.userId && u.role === role);
-    } else if (role === ROLES.SITE_COORDINATOR && details?.siteId) {
-      const site = mockSites.find(s => s.id === details.siteId);
-      if (site?.coordinatorId) { // Check if site has a coordinatorId
-        userToLogin = mockUsers.find(u => u.id === site.coordinatorId && u.role === ROLES.SITE_COORDINATOR);
+    // 1. Prioritize specific user if ID is given (from new login flow)
+    if (details?.userId) {
+      userToLogin = mockUsers.find(u => u.id === details.userId);
+      if (userToLogin) {
+        // Ensure the role matches, though the login page logic should already ensure this.
+        // Also, update site/sg assignment if the selected user is being assigned contextually (e.g., an NC leading an SG temporarily)
+        userToLogin.role = role; 
+        if (details.siteId) userToLogin.siteId = details.siteId;
+        if (details.smallGroupId) userToLogin.smallGroupId = details.smallGroupId;
       }
-      if (!userToLogin) { // If no specific coordinator found for this site, or site has no coordinatorId
-        userToLogin = {
-          id: `generic-site-${details.siteId}-${Date.now()}`,
-          name: `${site?.name || 'Site'} Coordinator`,
-          email: `${site?.name?.toLowerCase().replace(/\s+/g, '') || 'site_coord'}@aylf.org`,
-          role: ROLES.SITE_COORDINATOR,
-          siteId: details.siteId,
-        };
-      }
-    } else if (role === ROLES.SMALL_GROUP_LEADER && details?.smallGroupId) {
-      const sg = mockSmallGroups.find(s => s.id === details.smallGroupId);
-      if (sg?.leaderId) { // Check if small group has a leaderId
-         userToLogin = mockUsers.find(u => u.id === sg.leaderId && u.role === ROLES.SMALL_GROUP_LEADER);
-      }
-      if (!userToLogin) { // If no specific leader found for this SG, or SG has no leaderId
-        userToLogin = {
-          id: `generic-sg-${details.smallGroupId}-${Date.now()}`,
-          name: `${sg?.name || 'Small Group'} Leader`,
-          email: `${sg?.name?.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/gi, '') || 'sg_leader'}@aylf.org`,
-          role: ROLES.SMALL_GROUP_LEADER,
-          smallGroupId: details.smallGroupId,
-          siteId: sg?.siteId, 
-        };
-      }
-    } else { // National Coordinator or any other role without specific entity selection
-      userToLogin = mockUsers.find(u => u.role === role);
+    }
+    
+    // 2. Fallback: If no userId, or user not found by ID (should be rare with new flow), use existing logic
+    if (!userToLogin) {
+        if (role === ROLES.SITE_COORDINATOR && details?.siteId) {
+          const site = mockSites.find(s => s.id === details.siteId);
+          // Site coordinator ID is now a user ID
+          if (site?.coordinatorId) userToLogin = mockUsers.find(u => u.id === site.coordinatorId && u.role === ROLES.SITE_COORDINATOR);
+          
+          if (!userToLogin) { // Generic fallback if no specific coordinator for that site by ID
+            userToLogin = {
+              id: `generic-site-${details.siteId}-${Date.now()}`,
+              name: `${site?.name || 'Site'} Coordinator`,
+              email: `${site?.name?.toLowerCase().replace(/\s+/g, '') || 'site_coord'}@aylf.org`,
+              role: ROLES.SITE_COORDINATOR,
+              siteId: details.siteId,
+            };
+          }
+        } else if (role === ROLES.SMALL_GROUP_LEADER && details?.smallGroupId) {
+          const sg = mockSmallGroups.find(s => s.id === details.smallGroupId);
+          if (sg?.leaderId) userToLogin = mockUsers.find(u => u.id === sg.leaderId && u.role === ROLES.SMALL_GROUP_LEADER);
+
+          if (!userToLogin) { // Generic fallback
+            userToLogin = {
+              id: `generic-sg-${details.smallGroupId}-${Date.now()}`,
+              name: `${sg?.name || 'Small Group'} Leader`,
+              email: `${sg?.name?.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/gi, '') || 'sg_leader'}@aylf.org`,
+              role: ROLES.SMALL_GROUP_LEADER,
+              smallGroupId: details.smallGroupId,
+              siteId: sg?.siteId, 
+            };
+          }
+        } else { // National Coordinator or any other role without specific entity selection
+          // For NC, the new flow passes userId. This is a deeper fallback.
+          userToLogin = mockUsers.find(u => u.role === role); 
+        }
     }
 
-    // Final fallback if no user found by any means (e.g. national coordinator not in mockUsers)
+
+    // Final fallback if no user found by any means
     if (!userToLogin) {
       const genericUserName = role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       userToLogin = {
@@ -92,23 +106,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         siteId: details?.siteId,
         smallGroupId: details?.smallGroupId,
       };
-      // Ensure siteId is populated for SG if only smallGroupId was passed
       if(role === ROLES.SMALL_GROUP_LEADER && details?.smallGroupId && !userToLogin.siteId){
            const sg = mockSmallGroups.find(s => s.id === details.smallGroupId);
            userToLogin.siteId = sg?.siteId;
       }
-      console.warn(`No specific mock user found for role ${role}. Using a generic user:`, userToLogin);
+      console.warn(`No specific mock user found for role ${role} and details provided. Using a generic user:`, userToLogin);
     }
     
     // Ensure the final user object has the correct siteId/smallGroupId if passed through details,
     // especially if an existing user was found but their stored assignment needs updating for this session.
-    if (role === ROLES.SITE_COORDINATOR && details?.siteId && userToLogin.siteId !== details.siteId) {
-        userToLogin = {...userToLogin, siteId: details.siteId, smallGroupId: undefined}; // Site coordinators shouldn't have smallGroupId directly
-    }
-    if (role === ROLES.SMALL_GROUP_LEADER && details?.smallGroupId) {
-        const sg = mockSmallGroups.find(s => s.id === details.smallGroupId);
-        if (userToLogin.smallGroupId !== details.smallGroupId || userToLogin.siteId !== sg?.siteId) {
-           userToLogin = {...userToLogin, smallGroupId: details.smallGroupId, siteId: sg?.siteId};
+     if (userToLogin) {
+        userToLogin.role = role; // Ensure the role is what was selected
+        if (role === ROLES.SITE_COORDINATOR && details?.siteId) {
+            userToLogin.siteId = details.siteId;
+            userToLogin.smallGroupId = undefined; 
+        }
+        if (role === ROLES.SMALL_GROUP_LEADER && details?.smallGroupId) {
+            const sg = mockSmallGroups.find(s => s.id === details.smallGroupId);
+            userToLogin.smallGroupId = details.smallGroupId;
+            userToLogin.siteId = sg?.siteId;
+        }
+        if (role === ROLES.NATIONAL_COORDINATOR) {
+            userToLogin.siteId = undefined;
+            userToLogin.smallGroupId = undefined;
         }
     }
     
@@ -122,14 +142,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setCurrentUser(null);
     localStorage.removeItem("currentUser");
     setIsLoading(false);
-    // Optionally redirect to login page after logout
-    // window.location.href = '/login'; // or use Next.js router if preferred and available here
   }, []);
 
   const updateUserProfile = useCallback((updatedData: Partial<User>) => {
     if (currentUser) {
       const newUser = { ...currentUser, ...updatedData };
-      // Prevent role change from profile edit
       if (updatedData.role && updatedData.role !== currentUser.role) {
         console.warn("Role cannot be changed from profile edit. Ignoring role update.");
         newUser.role = currentUser.role;
@@ -137,7 +154,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setCurrentUser(newUser);
       localStorage.setItem("currentUser", JSON.stringify(newUser));
 
-      // Also update in mockUsers for persistence across sessions (mock only)
       const userIndex = mockUsers.findIndex(u => u.id === currentUser.id);
       if (userIndex !== -1) {
         mockUsers[userIndex] = { ...mockUsers[userIndex], ...newUser };
@@ -151,3 +167,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

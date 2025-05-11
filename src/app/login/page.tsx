@@ -1,7 +1,7 @@
 // src/app/login/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { APP_NAME, ROLES } from "@/lib/constants";
-import type { Role, SmallGroup } from "@/lib/types"; // Added SmallGroup
-import { mockSites, mockSmallGroups } from "@/lib/mockData"; // Added mockSites and mockSmallGroups
+import type { Role, SmallGroup, Site, User } from "@/lib/types"; 
+import { mockSites, mockSmallGroups, mockUsers } from "@/lib/mockData"; 
 import { LogIn } from "lucide-react";
 import Image from "next/image";
 
@@ -18,7 +18,12 @@ export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<Role | "">("");
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
   const [selectedSmallGroupId, setSelectedSmallGroupId] = useState<string>("");
+  const [selectedUserId, setSelectedUserId] = useState<string>(""); // For NC, SC, SGL
+
   const [availableSmallGroups, setAvailableSmallGroups] = useState<SmallGroup[]>([]);
+  const [availableNationalCoordinators, setAvailableNationalCoordinators] = useState<User[]>([]);
+  const [availableSiteCoordinators, setAvailableSiteCoordinators] = useState<User[]>([]);
+  const [availableSmallGroupLeaders, setAvailableSmallGroupLeaders] = useState<User[]>([]);
   
   const { login, currentUser, isLoading } = useAuth();
   const router = useRouter();
@@ -29,25 +34,66 @@ export default function LoginPage() {
     }
   }, [currentUser, isLoading, router]);
 
+  // Reset selections when role changes
   useEffect(() => {
+    setSelectedSiteId("");
+    setSelectedSmallGroupId("");
+    setSelectedUserId("");
+    setAvailableSmallGroups([]);
+    setAvailableNationalCoordinators([]);
+    setAvailableSiteCoordinators([]);
+    setAvailableSmallGroupLeaders([]);
+
+    if (selectedRole === ROLES.NATIONAL_COORDINATOR) {
+      setAvailableNationalCoordinators(
+        mockUsers.filter(u => u.role === ROLES.NATIONAL_COORDINATOR)
+      );
+    }
+  }, [selectedRole]);
+
+  // Populate site coordinators or small groups when site changes
+  useEffect(() => {
+    setSelectedSmallGroupId("");
+    setSelectedUserId(""); // Reset user ID if site changes
+    setAvailableSmallGroupLeaders([]); 
+
+    if (selectedRole === ROLES.SITE_COORDINATOR && selectedSiteId) {
+      setAvailableSiteCoordinators(
+        mockUsers.filter(u => u.role === ROLES.SITE_COORDINATOR && u.siteId === selectedSiteId)
+      );
+    } else {
+      setAvailableSiteCoordinators([]);
+    }
+
     if (selectedRole === ROLES.SMALL_GROUP_LEADER && selectedSiteId) {
       setAvailableSmallGroups(mockSmallGroups.filter(sg => sg.siteId === selectedSiteId));
-      setSelectedSmallGroupId(""); // Reset small group selection when site changes
     } else {
       setAvailableSmallGroups([]);
-      if (selectedRole !== ROLES.SMALL_GROUP_LEADER) {
-         setSelectedSmallGroupId(""); // Clear small group if not SG Leader role
+    }
+  }, [selectedSiteId, selectedRole]);
+
+  // Populate small group leaders when small group changes
+  useEffect(() => {
+    setSelectedUserId(""); // Reset user ID if SG changes
+    if (selectedRole === ROLES.SMALL_GROUP_LEADER && selectedSmallGroupId) {
+      const sg = mockSmallGroups.find(s => s.id === selectedSmallGroupId);
+      if (sg?.leaderId) {
+        setAvailableSmallGroupLeaders(mockUsers.filter(u => u.id === sg.leaderId && u.role === ROLES.SMALL_GROUP_LEADER));
+      } else {
+         // If no explicit leader, could list users eligible to be leaders for this SG, or an empty list
+        setAvailableSmallGroupLeaders([]);
       }
+    } else {
+      setAvailableSmallGroupLeaders([]);
     }
-    if (selectedRole !== ROLES.SITE_COORDINATOR && selectedRole !== ROLES.SMALL_GROUP_LEADER) {
-        setSelectedSiteId(""); // Clear site if not Site Coordinator or SG Leader
-    }
-  }, [selectedRole, selectedSiteId]);
+  }, [selectedSmallGroupId, selectedRole]);
+
 
   const isLoginDisabled = () => {
     if (!selectedRole) return true;
-    if (selectedRole === ROLES.SITE_COORDINATOR && !selectedSiteId) return true;
-    if (selectedRole === ROLES.SMALL_GROUP_LEADER && (!selectedSiteId || !selectedSmallGroupId)) return true;
+    if (selectedRole === ROLES.NATIONAL_COORDINATOR && !selectedUserId) return true;
+    if (selectedRole === ROLES.SITE_COORDINATOR && (!selectedSiteId || !selectedUserId)) return true;
+    if (selectedRole === ROLES.SMALL_GROUP_LEADER && (!selectedSiteId || !selectedSmallGroupId || !selectedUserId)) return true;
     return false;
   };
 
@@ -55,7 +101,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (isLoginDisabled() || !selectedRole) return;
 
-    let loginDetails: { siteId?: string; smallGroupId?: string } = {};
+    const loginDetails: { userId?: string; siteId?: string; smallGroupId?: string } = { userId: selectedUserId };
     if (selectedRole === ROLES.SITE_COORDINATOR) {
       loginDetails.siteId = selectedSiteId;
     } else if (selectedRole === ROLES.SMALL_GROUP_LEADER) {
@@ -117,6 +163,24 @@ export default function LoginPage() {
               </Select>
             </div>
 
+            {selectedRole === ROLES.NATIONAL_COORDINATOR && (
+              <div className="space-y-2">
+                <Label htmlFor="national-coordinator-select" className="text-sm font-medium">Select National Coordinator</Label>
+                <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={availableNationalCoordinators.length === 0}>
+                  <SelectTrigger id="national-coordinator-select" className="w-full text-base">
+                    <SelectValue placeholder="Choose your name" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableNationalCoordinators.map((user) => (
+                      <SelectItem key={user.id} value={user.id} className="text-base">
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {(selectedRole === ROLES.SITE_COORDINATOR || selectedRole === ROLES.SMALL_GROUP_LEADER) && (
               <div className="space-y-2">
                 <Label htmlFor="site-select" className="text-sm font-medium">Select Site</Label>
@@ -134,6 +198,27 @@ export default function LoginPage() {
                 </Select>
               </div>
             )}
+            
+            {selectedRole === ROLES.SITE_COORDINATOR && selectedSiteId && (
+                 <div className="space-y-2">
+                    <Label htmlFor="site-coordinator-select" className="text-sm font-medium">Select Site Coordinator</Label>
+                    <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={availableSiteCoordinators.length === 0}>
+                        <SelectTrigger id="site-coordinator-select" className="w-full text-base">
+                            <SelectValue placeholder="Choose your name" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableSiteCoordinators.length > 0 ? availableSiteCoordinators.map((user) => (
+                                <SelectItem key={user.id} value={user.id} className="text-base">
+                                    {user.name}
+                                </SelectItem>
+                            )) : (
+                                <SelectItem value="" disabled>No coordinators for selected site</SelectItem>
+                            )}
+                        </SelectContent>
+                    </Select>
+                 </div>
+            )}
+
 
             {selectedRole === ROLES.SMALL_GROUP_LEADER && selectedSiteId && (
               <div className="space-y-2">
@@ -155,6 +240,27 @@ export default function LoginPage() {
               </div>
             )}
 
+            {selectedRole === ROLES.SMALL_GROUP_LEADER && selectedSmallGroupId && (
+                 <div className="space-y-2">
+                    <Label htmlFor="sg-leader-select" className="text-sm font-medium">Select Small Group Leader</Label>
+                    <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={availableSmallGroupLeaders.length === 0}>
+                        <SelectTrigger id="sg-leader-select" className="w-full text-base">
+                            <SelectValue placeholder="Choose your name" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableSmallGroupLeaders.length > 0 ? availableSmallGroupLeaders.map((user) => (
+                                <SelectItem key={user.id} value={user.id} className="text-base">
+                                    {user.name}
+                                </SelectItem>
+                            )) : (
+                                <SelectItem value="" disabled>No designated leader for this group</SelectItem>
+                            )}
+                        </SelectContent>
+                    </Select>
+                 </div>
+            )}
+
+
             <Button type="submit" className="w-full text-lg py-6" disabled={isLoginDisabled()}>
               <LogIn className="mr-2 h-5 w-5" /> Login
             </Button>
@@ -164,3 +270,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
