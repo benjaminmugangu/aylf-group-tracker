@@ -1,5 +1,5 @@
 import type { NavItem, Role } from "@/lib/types";
-import { LayoutDashboard, Activity, Users, FileText, Lightbulb, Building, Settings, UsersRound, Briefcase, Award } from "lucide-react";
+import { LayoutDashboard, Activity, Users, FileText, Lightbulb, Building, Settings, UsersRound, Briefcase, Award, UserCircle as UserProfileIcon } from "lucide-react";
 
 export const ROLES: Record<string, Role> = {
   NATIONAL_COORDINATOR: "national_coordinator",
@@ -103,7 +103,12 @@ export const NAVIGATION_LINKS: NavItem[] = [
     icon: Award,
     allowedRoles: [ROLES.NATIONAL_COORDINATOR],
   },
+  {
+    href: "/dashboard/settings/profile",
+    label: "My Profile",
+    icon: UserProfileIcon, // Changed from Settings icon for clarity
+    allowedRoles: [ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER],
+  }
 ];
 
 export const APP_NAME = "AYLF Small Group Tracker";
-

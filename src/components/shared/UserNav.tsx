@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link"; // Import Link
+import { ROLES } from "@/lib/constants";
 
 export function UserNav() {
   const { currentUser, logout, isLoading } = useAuth();
@@ -34,11 +36,14 @@ export function UserNav() {
 
   const getInitials = (name: string) => {
     const names = name.split(' ');
-    if (names.length > 1) {
+    if (names.length > 1 && names[0] && names[names.length-1]) { // Check if names[0] and names[names.length -1] exist
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
   };
+
+  const canEditProfile = currentUser.role === ROLES.SITE_COORDINATOR || currentUser.role === ROLES.SMALL_GROUP_LEADER || currentUser.role === ROLES.NATIONAL_COORDINATOR;
+
 
   return (
     <DropdownMenu>
@@ -61,18 +66,17 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem className="cursor-pointer">
-            <UserCircle className="mr-2 h-4 w-4 text-muted-foreground" />
-            <span>Profile</span>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href="/dashboard/settings/profile">
+              <UserCircle className="mr-2 h-4 w-4 text-muted-foreground" />
+              <span>My Profile</span>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-default"> {/* Made non-interactive as it's just info */}
              <ShieldCheck className="mr-2 h-4 w-4 text-muted-foreground" />
             <span>{currentUser.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-            <span>Settings</span>
-          </DropdownMenuItem>
+          {/* Future settings link can be added here if needed */}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive-foreground focus:bg-destructive">

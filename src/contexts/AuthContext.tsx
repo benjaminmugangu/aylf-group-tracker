@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (role: Role, details?: { userId?: string, siteId?: string, smallGroupId?: string }) => void;
   logout: () => void;
   isLoading: boolean;
+  updateUserProfile: (updatedData: Partial<User>) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,8 +126,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // window.location.href = '/login'; // or use Next.js router if preferred and available here
   }, []);
 
+  const updateUserProfile = useCallback((updatedData: Partial<User>) => {
+    if (currentUser) {
+      const newUser = { ...currentUser, ...updatedData };
+      // Prevent role change from profile edit
+      if (updatedData.role && updatedData.role !== currentUser.role) {
+        console.warn("Role cannot be changed from profile edit. Ignoring role update.");
+        newUser.role = currentUser.role;
+      }
+      setCurrentUser(newUser);
+      localStorage.setItem("currentUser", JSON.stringify(newUser));
+
+      // Also update in mockUsers for persistence across sessions (mock only)
+      const userIndex = mockUsers.findIndex(u => u.id === currentUser.id);
+      if (userIndex !== -1) {
+        mockUsers[userIndex] = { ...mockUsers[userIndex], ...newUser };
+      }
+    }
+  }, [currentUser]);
+
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ currentUser, login, logout, isLoading, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
