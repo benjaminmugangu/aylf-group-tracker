@@ -17,8 +17,10 @@ import React, { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth"; // Added useAuth
 
 export default function ActivitiesPage() {
+  const { currentUser } = useAuth(); // Get current user
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
   const [statusFilter, setStatusFilter] = useState<Record<Activity["status"], boolean>>({
@@ -63,6 +65,20 @@ export default function ActivitiesPage() {
       default: return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
     }
   }
+
+  const canEditActivity = (activity: Activity): boolean => {
+    if (!currentUser) return false;
+    if (currentUser.role === ROLES.NATIONAL_COORDINATOR) {
+      return true;
+    }
+    if (currentUser.role === ROLES.SITE_COORDINATOR) {
+      return activity.level === 'site' && activity.siteId === currentUser.siteId;
+    }
+    if (currentUser.role === ROLES.SMALL_GROUP_LEADER) {
+      return activity.level === 'small_group' && activity.smallGroupId === currentUser.smallGroupId;
+    }
+    return false;
+  };
 
 
   return (
@@ -147,7 +163,9 @@ export default function ActivitiesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {fullyFilteredActivities.length > 0 ? fullyFilteredActivities.map(activity => (
+                {fullyFilteredActivities.length > 0 ? fullyFilteredActivities.map(activity => {
+                  const isEditable = canEditActivity(activity);
+                  return (
                   <TableRow key={activity.id}>
                     <TableCell className="font-medium">{activity.name}</TableCell>
                     <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
@@ -168,14 +186,21 @@ export default function ActivitiesPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/activities/${activity.id}/edit`} passHref>
-                        <Button variant="ghost" size="icon" title="Edit Activity">
+                      {isEditable ? (
+                        <Link href={`/dashboard/activities/${activity.id}/edit`} passHref>
+                          <Button variant="ghost" size="icon" title="Edit Activity">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button variant="ghost" size="icon" title="Edit Activity" disabled>
                           <Edit className="h-4 w-4" />
                         </Button>
-                      </Link>
+                      )}
                     </TableCell>
                   </TableRow>
-                )) : (
+                  );
+                }) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center h-24">
                       No activities found matching your criteria.
