@@ -30,6 +30,7 @@ export default function SiteDetailPage() {
   const [site, setSite] = useState<Site | null>(null);
   const [smallGroups, setSmallGroups] = useState<SmallGroupWithCounts[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalSiteMembersCount, setTotalSiteMembersCount] = useState(0);
 
   useEffect(() => {
     const foundSite = mockSites.find(s => s.id === siteId);
@@ -42,6 +43,9 @@ export default function SiteDetailPage() {
           membersCount: mockMembers.filter(mem => mem.smallGroupId === sg.id).length,
         }));
       setSmallGroups(siteSmallGroups);
+
+      const membersForThisSite = mockMembers.filter(mem => mem.siteId === siteId).length;
+      setTotalSiteMembersCount(membersForThisSite);
     }
     setIsLoading(false);
   }, [siteId]);
@@ -140,7 +144,7 @@ export default function SiteDetailPage() {
               <Users className="mr-3 h-5 w-5 text-muted-foreground" />
               <div>
                 <span className="text-sm font-medium text-muted-foreground">Total Members</span>
-                <p className="text-foreground">{smallGroups.reduce((acc, sg) => acc + sg.membersCount, 0)}</p>
+                <p className="text-foreground">{totalSiteMembersCount}</p>
               </div>
             </div>
           </CardContent>
