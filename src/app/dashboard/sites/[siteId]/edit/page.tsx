@@ -7,11 +7,11 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SiteForm } from "../../components/SiteForm";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
-import { mockSites, mockUsers } from "@/lib/mockData";
-import type { Site, SiteFormData, User } from "@/lib/types";
+import { mockSites } from "@/lib/mockData";
+import type { SiteFormData } from "@/lib/types";
 import { Edit, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function EditSitePage() {
@@ -26,44 +26,22 @@ export default function EditSitePage() {
     if (!siteToEdit) return;
 
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const oldCoordinatorId = siteToEdit.coordinatorId;
-    const newCoordinatorId = data.coordinatorId;
-
-    // Update coordinator assignments in mockUsers
-    if (oldCoordinatorId !== newCoordinatorId) {
-      if (oldCoordinatorId) {
-        const oldCoordIndex = mockUsers.findIndex(u => u.id === oldCoordinatorId);
-        if (oldCoordIndex !== -1 && mockUsers[oldCoordIndex].siteId === siteId) {
-          // Only remove from this site if they were its coordinator
-          mockUsers[oldCoordIndex].siteId = undefined; 
-           // If their role was specifically Site Coordinator due to this assignment,
-           // this mock update doesn't automatically revert their role.
-           // A real backend would handle role/assignment consistency.
-        }
-      }
-      if (newCoordinatorId) {
-        const newCoordIndex = mockUsers.findIndex(u => u.id === newCoordinatorId);
-        if (newCoordIndex !== -1) {
-          mockUsers[newCoordIndex].siteId = siteId;
-          // Ensure the new coordinator has the correct role if they are being assigned.
-          // This might be an oversimplification for mock data.
-          if(mockUsers[newCoordIndex].role !== ROLES.NATIONAL_COORDINATOR) { // NC can also be a coordinator
-             mockUsers[newCoordIndex].role = ROLES.SITE_COORDINATOR;
-          }
-        }
-      }
-    }
     
     // Update site in mockSites
+    // data.coordinatorId is now the name string from the form
     const siteIndex = mockSites.findIndex(s => s.id === siteId);
     if (siteIndex !== -1) {
-      mockSites[siteIndex] = { ...mockSites[siteIndex], ...data };
+      mockSites[siteIndex] = { 
+        ...mockSites[siteIndex], 
+        name: data.name,
+        coordinatorId: data.coordinatorId || undefined, 
+      };
     }
 
     console.log("Site Updated (mock):", mockSites[siteIndex]);
-    console.log("Users Updated (mock):", mockUsers.filter(u => u.id === oldCoordinatorId || u.id === newCoordinatorId));
-
+    // Note: The previous logic to update mockUsers (assigning/unassigning siteId to coordinator users)
+    // has been removed as coordinatorId from the form is now just a name.
+    // User role and site assignments should be managed via the User Management section.
 
     toast({
       title: "Site Updated!",

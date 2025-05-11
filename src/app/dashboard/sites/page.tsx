@@ -9,7 +9,7 @@ import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, PlusCircle, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockSites, mockUsers, mockSmallGroups, mockMembers } from "@/lib/mockData";
+import { mockSites, mockSmallGroups, mockMembers } from "@/lib/mockData"; // mockUsers removed as direct coordinator lookup logic changes
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,10 +68,9 @@ export default function ManageSitesPage() {
     );
   }, []);
   
-  const getCoordinatorName = (coordinatorId?: string) => {
-    if (!coordinatorId) return "N/A";
-    const coordinator = mockUsers.find(user => user.id === coordinatorId);
-    return coordinator ? coordinator.name : "N/A";
+  // site.coordinatorId now stores the name directly
+  const getCoordinatorName = (coordinatorName?: string) => {
+    return coordinatorName || "N/A";
   };
   
   const getCoordinatorInitials = (name: string) => {
@@ -116,16 +115,22 @@ export default function ManageSitesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sitesWithCounts.length > 0 ? sitesWithCounts.map(site => (
+                {sitesWithCounts.length > 0 ? sitesWithCounts.map(site => {
+                  const coordinatorDisplayName = getCoordinatorName(site.coordinatorId);
+                  return (
                   <TableRow key={site.id}>
                     <TableCell className="font-medium">{site.name}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={`https://avatar.vercel.sh/${getCoordinatorName(site.coordinatorId)}.png`} alt={getCoordinatorName(site.coordinatorId)} data-ai-hint="coordinator avatar" />
-                          <AvatarFallback>{getCoordinatorInitials(getCoordinatorName(site.coordinatorId))}</AvatarFallback>
+                          {/* Use coordinatorDisplayName for avatar generation if not "N/A" */}
+                          <AvatarImage 
+                            src={coordinatorDisplayName !== "N/A" ? `https://avatar.vercel.sh/${coordinatorDisplayName.replace(/\s+/g, '')}.png` : undefined} 
+                            alt={coordinatorDisplayName} 
+                            data-ai-hint="coordinator avatar" />
+                          <AvatarFallback>{getCoordinatorInitials(coordinatorDisplayName)}</AvatarFallback>
                         </Avatar>
-                        <span>{getCoordinatorName(site.coordinatorId)}</span>
+                        <span>{coordinatorDisplayName}</span>
                       </div>
                     </TableCell>
                     <TableCell>{site.membersCount}</TableCell>
@@ -146,7 +151,8 @@ export default function ManageSitesPage() {
                       </Button>
                     </TableCell>
                   </TableRow>
-                )) : (
+                );
+              }) : (
                   [...Array(5)].map((_, index) => ( 
                     <TableRow key={`skeleton-${index}`}>
                       <TableCell><Skeleton className="h-5 w-24" /></TableCell>

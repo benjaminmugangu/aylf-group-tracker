@@ -15,7 +15,7 @@ import { Building, Users, UserCircle, Eye, Info, Edit, Trash2, PlusCircle } from
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/hooks/useAuth"; // Added useAuth
+import { useAuth } from "@/hooks/useAuth"; 
 
 interface SmallGroupWithCounts extends SmallGroupType {
   membersCount: number;
@@ -25,7 +25,7 @@ export default function SiteDetailPage() {
   const params = useParams();
   const router = useRouter();
   const siteId = params.siteId as string;
-  const { currentUser } = useAuth(); // Get current user
+  const { currentUser } = useAuth(); 
 
   const [site, setSite] = useState<Site | null>(null);
   const [smallGroups, setSmallGroups] = useState<SmallGroupWithCounts[]>([]);
@@ -48,6 +48,7 @@ export default function SiteDetailPage() {
 
   const getLeaderName = (leaderId?: string) => {
     if (!leaderId) return "N/A";
+    // Small Group leaderId is still a User ID
     const leader = mockUsers.find(user => user.id === leaderId);
     return leader ? leader.name : "N/A";
   };
@@ -87,9 +88,9 @@ export default function SiteDetailPage() {
     );
   }
   
-  const siteCoordinator = mockUsers.find(user => user.id === site.coordinatorId);
+  // site.coordinatorId now stores the name directly
+  const siteCoordinatorName = site.coordinatorId; 
   const canManageSite = currentUser?.role === ROLES.NATIONAL_COORDINATOR;
-  // Site coordinator can manage SGs within their own site.
   const canManageSmallGroups = currentUser?.role === ROLES.NATIONAL_COORDINATOR || (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser?.siteId === site.id);
 
 
@@ -125,7 +126,7 @@ export default function SiteDetailPage() {
               <UserCircle className="mr-3 h-5 w-5 text-muted-foreground" />
               <div>
                 <span className="text-sm font-medium text-muted-foreground">Coordinator</span>
-                <p className="text-foreground">{siteCoordinator?.name || "N/A"}</p>
+                <p className="text-foreground">{siteCoordinatorName || "N/A"}</p>
               </div>
             </div>
              <div className="flex items-center">
