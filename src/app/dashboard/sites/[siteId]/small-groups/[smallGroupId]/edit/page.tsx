@@ -9,7 +9,7 @@ import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { mockSites, mockSmallGroups, mockUsers } from "@/lib/mockData";
 import type { SmallGroup as SmallGroupType, User } from "@/lib/types";
-import { Edit, Info, Users as UsersIcon } from "lucide-react"; // Changed import name for Users to avoid conflict
+import { Edit, Info, Users as UsersIcon } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,40 +34,75 @@ export default function EditSmallGroupPage() {
 
     const oldLeaderId = smallGroupToEdit.leaderId;
     const newLeaderId = data.leaderId;
+    const oldLogisticsId = smallGroupToEdit.logisticsAssistantId;
+    const newLogisticsId = data.logisticsAssistantId;
+    const oldFinanceId = smallGroupToEdit.financeAssistantId;
+    const newFinanceId = data.financeAssistantId;
 
-    // Update leader assignments in mockUsers
+    // Helper to update user assignment
+    const updateUserAssignment = (userIdToUpdate: string | undefined, newSgId: string | undefined, newSiteId: string, isPrimaryLeader: boolean) => {
+      if (!userIdToUpdate) return;
+      const userIndex = mockUsers.findIndex(u => u.id === userIdToUpdate);
+      if (userIndex !== -1) {
+        // If user is being assigned, set their SG and site
+        if (newSgId) {
+          // If user was previously a leader/assistant of another SG, clear that old SG's leader/assistant field
+          if (mockUsers[userIndex].smallGroupId && mockUsers[userIndex].smallGroupId !== newSgId) {
+            const prevSgIndex = mockSmallGroups.findIndex(sg => sg.id === mockUsers[userIndex].smallGroupId);
+            if (prevSgIndex !== -1) {
+              if (mockSmallGroups[prevSgIndex].leaderId === userIdToUpdate) mockSmallGroups[prevSgIndex].leaderId = undefined;
+              if (mockSmallGroups[prevSgIndex].logisticsAssistantId === userIdToUpdate) mockSmallGroups[prevSgIndex].logisticsAssistantId = undefined;
+              if (mockSmallGroups[prevSgIndex].financeAssistantId === userIdToUpdate) mockSmallGroups[prevSgIndex].financeAssistantId = undefined;
+            }
+          }
+          mockUsers[userIndex].smallGroupId = newSgId;
+          mockUsers[userIndex].siteId = newSiteId; // Assign site ID as well
+          // Ensure role is SGL if they are not NC or SC
+          if (isPrimaryLeader && mockUsers[userIndex].role !== ROLES.NATIONAL_COORDINATOR && mockUsers[userIndex].role !== ROLES.SITE_COORDINATOR) {
+            mockUsers[userIndex].role = ROLES.SMALL_GROUP_LEADER;
+          }
+        } else { // User is being unassigned from this SG
+          if (mockUsers[userIndex].smallGroupId === smallGroupId) { // Only clear if they were assigned to *this* SG
+            mockUsers[userIndex].smallGroupId = undefined;
+            // Optionally, revert role if they are no longer leading any SG, but this is complex. For now, role stays.
+          }
+        }
+      }
+    };
+    
+    // Main leader
     if (oldLeaderId !== newLeaderId) {
-      if (oldLeaderId) {
-        const oldLeaderIndex = mockUsers.findIndex(u => u.id === oldLeaderId);
-        if (oldLeaderIndex !== -1 && mockUsers[oldLeaderIndex].smallGroupId === smallGroupId) {
-          mockUsers[oldLeaderIndex].smallGroupId = undefined;
-        }
-      }
-      if (newLeaderId) {
-        const newLeaderIndex = mockUsers.findIndex(u => u.id === newLeaderId);
-        if (newLeaderIndex !== -1) {
-          if(mockUsers[newLeaderIndex].smallGroupId) {
-              const prevSgIndex = mockSmallGroups.findIndex(sg => sg.id === mockUsers[newLeaderIndex].smallGroupId);
-              if(prevSgIndex !== -1 && mockSmallGroups[prevSgIndex].leaderId === newLeaderId) {
-                  mockSmallGroups[prevSgIndex].leaderId = undefined;
-              }
-          }
-          mockUsers[newLeaderIndex].smallGroupId = smallGroupId;
-          mockUsers[newLeaderIndex].siteId = siteId; 
-          if (mockUsers[newLeaderIndex].role !== ROLES.NATIONAL_COORDINATOR && mockUsers[newLeaderIndex].role !== ROLES.SITE_COORDINATOR) {
-            mockUsers[newLeaderIndex].role = ROLES.SMALL_GROUP_LEADER;
-          }
-        }
-      }
+      updateUserAssignment(oldLeaderId, undefined, siteId, true); // Unassign old
+      updateUserAssignment(newLeaderId, smallGroupId, siteId, true); // Assign new
+    }
+    // Logistics assistant
+    if (oldLogisticsId !== newLogisticsId) {
+      updateUserAssignment(oldLogisticsId, undefined, siteId, false);
+      updateUserAssignment(newLogisticsId, smallGroupId, siteId, false);
+    }
+    // Finance assistant
+    if (oldFinanceId !== newFinanceId) {
+      updateUserAssignment(oldFinanceId, undefined, siteId, false);
+      updateUserAssignment(newFinanceId, smallGroupId, siteId, false);
     }
     
     const sgIndex = mockSmallGroups.findIndex(sg => sg.id === smallGroupId);
     if (sgIndex !== -1) {
-      mockSmallGroups[sgIndex] = { ...mockSmallGroups[sgIndex], ...data, siteId: siteId }; 
+      mockSmallGroups[sgIndex] = { 
+        ...mockSmallGroups[sgIndex], 
+        name: data.name,
+        leaderId: data.leaderId,
+        logisticsAssistantId: data.logisticsAssistantId,
+        financeAssistantId: data.financeAssistantId,
+        siteId: siteId // Ensure siteId remains consistent
+      }; 
     }
 
     console.log("Small Group Updated (mock):", mockSmallGroups[sgIndex]);
-    console.log("Users Updated (mock):", mockUsers.filter(u => u.id === oldLeaderId || u.id === newLeaderId));
+    // console.log("Users Updated (mock):", mockUsers.filter(u => 
+    //   [oldLeaderId, newLeaderId, oldLogisticsId, newLogisticsId, oldFinanceId, newFinanceId].includes(u.id)
+    // ));
+
 
     toast({
       title: "Small Group Updated!",
@@ -78,7 +113,6 @@ export default function EditSmallGroupPage() {
 
   if (!site || !smallGroupToEdit) {
     return (
-      // Allow NC to access this page even if site/sg is not found, as they might be fixing an issue.
       <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
         <PageHeader title="Small Group Not Found" icon={Info} />
         <Card>
@@ -93,10 +127,9 @@ export default function EditSmallGroupPage() {
     );
   }
   
-  // Only National Coordinator can edit small groups.
   const canEdit = currentUser?.role === ROLES.NATIONAL_COORDINATOR;
 
-  if (!canEdit) { // This guard is effectively redundant if RoleBasedGuard below is set to NC only, but good for clarity.
+  if (!canEdit) { 
      return (
       <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
         <PageHeader title="Access Denied" description="You do not have permission to edit this small group." icon={Info} />
@@ -108,12 +141,11 @@ export default function EditSmallGroupPage() {
   }
 
   return (
-    // Restrict page access to National Coordinators only.
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
       <PageHeader 
         title={`Edit Small Group: ${smallGroupToEdit.name}`}
         description={`Modifying details for "${smallGroupToEdit.name}" within ${site.name}.`}
-        icon={UsersIcon} // Using renamed import
+        icon={UsersIcon} 
       />
       <SmallGroupForm 
         smallGroup={smallGroupToEdit} 

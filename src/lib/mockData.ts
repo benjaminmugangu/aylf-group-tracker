@@ -36,9 +36,16 @@ export const mockUsers: User[] = [
   { id: "user_leader_kolwezi_alumni_keira", name: "Keira KolweziAlumniLeader", email: "keira.kolwezi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kolwezi", smallGroupId: "sg_kolwezi_alumni", mandateStartDate: "2023-04-11", status: "active" },
   { id: "user_leader_lubumbashi_alumni_liam", name: "Liam LubumbashiAlumniLeader", email: "liam.lubumbashi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_lubumbashi", smallGroupId: "sg_lubumbashi_alumni", mandateStartDate: "2020-06-25", status: "active" },
   { id: "user_leader_uvira_alumni_uma", name: "Uma UviraAlumniLeader", email: "uma.uvira.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_uvira", smallGroupId: "sg_uvira_alumni", mandateStartDate: "2022-11-11", mandateEndDate: `${lastYear}-12-31`, status: "inactive" },
-  // Other SG Leaders for non-alumni groups (can use Site Coordinator as temp leader if specific not defined)
+  
+  // Other SG Leaders for non-alumni groups
   { id: "user_leader_beni_isc_temp", name: "Leader ISC Beni", email: "leader.isc.beni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_beni", smallGroupId: "sg_beni_isc", mandateStartDate: "2023-01-01", status: "active" },
   { id: "user_leader_goma_ulpgl_david", name: "David Ushindi", email: "david.ushindi.goma@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_goma", smallGroupId: "sg_goma_ulpgl", mandateStartDate: "2024-01-01", status: "active" },
+
+  // Example Assistant Leaders
+  { id: "user_log_beni_alumni_marc", name: "Marc BeniLogistics", email: "marc.beni.log@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_beni", smallGroupId: "sg_beni_alumni", mandateStartDate: "2023-01-01", status: "active" },
+  { id: "user_fin_beni_alumni_sophie", name: "Sophie BeniFinance", email: "sophie.beni.fin@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_beni", smallGroupId: "sg_beni_alumni", mandateStartDate: "2023-01-01", status: "active" },
+  { id: "user_log_goma_ulpgl_luc", name: "Luc GomaLogistics", email: "luc.goma.log@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_goma", smallGroupId: "sg_goma_ulpgl", mandateStartDate: "2024-01-01", status: "active" },
+  { id: "user_fin_goma_ulpgl_fatou", name: "Fatou GomaFinance", email: "fatou.goma.fin@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_goma", smallGroupId: "sg_goma_ulpgl", mandateStartDate: "2024-01-01", status: "active" },
 ];
 
 export const mockSites: Site[] = [
@@ -57,11 +64,11 @@ export const mockSites: Site[] = [
 
 export const mockSmallGroups: SmallGroup[] = [
   // Beni
-  { id: "sg_beni_alumni", name: "ALUMNI", siteId: "site_beni", leaderId: "user_leader_beni_alumni_anna" }, 
+  { id: "sg_beni_alumni", name: "ALUMNI", siteId: "site_beni", leaderId: "user_leader_beni_alumni_anna", logisticsAssistantId: "user_log_beni_alumni_marc", financeAssistantId: "user_fin_beni_alumni_sophie" }, 
   { id: "sg_beni_isc", name: "ISC", siteId: "site_beni", leaderId: "user_leader_beni_isc_temp" }, 
-  { id: "sg_beni_uac", name: "UAC", siteId: "site_beni", leaderId: "user_coord_beni_john" }, // Site coord as temp leader
-  { id: "sg_beni_ucbc", name: "UCBC", siteId: "site_beni", leaderId: "user_coord_beni_john" },// Site coord as temp leader
-  { id: "sg_beni_uos", name: "UOS", siteId: "site_beni", leaderId: "user_coord_beni_john" },// Site coord as temp leader
+  { id: "sg_beni_uac", name: "UAC", siteId: "site_beni", leaderId: "user_coord_beni_john" },
+  { id: "sg_beni_ucbc", name: "UCBC", siteId: "site_beni", leaderId: "user_coord_beni_john" },
+  { id: "sg_beni_uos", name: "UOS", siteId: "site_beni", leaderId: "user_coord_beni_john" },
   // Bukavu
   { id: "sg_bukavu_alumni", name: "ALUMNI", siteId: "site_bukavu", leaderId: "user_leader_bukavu_alumni_bob" },
   { id: "sg_bukavu_isdr", name: "ISDR", siteId: "site_bukavu", leaderId: "user_coord_bukavu_jane" },
@@ -82,7 +89,7 @@ export const mockSmallGroups: SmallGroup[] = [
   { id: "sg_goma_alumni", name: "ALUMNI", siteId: "site_goma", leaderId: "user_leader_goma_alumni_greg" },
   { id: "sg_goma_isig", name: "ISIG", siteId: "site_goma", leaderId: "user_coord_goma_grace" },
   { id: "sg_goma_ucs", name: "UCS", siteId: "site_goma", leaderId: "user_coord_goma_grace" },
-  { id: "sg_goma_ulpgl", name: "ULPGL", siteId: "site_goma", leaderId: "user_leader_goma_ulpgl_david" },
+  { id: "sg_goma_ulpgl", name: "ULPGL", siteId: "site_goma", leaderId: "user_leader_goma_ulpgl_david", logisticsAssistantId: "user_log_goma_ulpgl_luc", financeAssistantId: "user_fin_goma_ulpgl_fatou" },
   { id: "sg_goma_unigom", name: "UNIGOM", siteId: "site_goma", leaderId: "user_coord_goma_grace" },
   { id: "sg_goma_unim", name: "UNIM", siteId: "site_goma", leaderId: "user_coord_goma_grace" },
   // Kalemie

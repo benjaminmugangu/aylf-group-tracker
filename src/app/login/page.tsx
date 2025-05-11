@@ -14,16 +14,22 @@ import { mockSites, mockSmallGroups, mockUsers } from "@/lib/mockData";
 import { LogIn } from "lucide-react";
 import Image from "next/image";
 
+interface UserOption {
+  id: string;
+  name: string;
+  displayLabel: string;
+}
+
 export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<Role | "">("");
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
   const [selectedSmallGroupId, setSelectedSmallGroupId] = useState<string>("");
-  const [selectedUserId, setSelectedUserId] = useState<string>(""); // For NC, SC, SGL
+  const [selectedUserId, setSelectedUserId] = useState<string>(""); 
 
   const [availableSmallGroups, setAvailableSmallGroups] = useState<SmallGroup[]>([]);
   const [availableNationalCoordinators, setAvailableNationalCoordinators] = useState<User[]>([]);
   const [availableSiteCoordinators, setAvailableSiteCoordinators] = useState<User[]>([]);
-  const [availableSmallGroupLeaders, setAvailableSmallGroupLeaders] = useState<User[]>([]);
+  const [availableSmallGroupPersonnel, setAvailableSmallGroupPersonnel] = useState<UserOption[]>([]); // For SG Leader, Logistics, Finance
   
   const { login, currentUser, isLoading } = useAuth();
   const router = useRouter();
@@ -42,11 +48,11 @@ export default function LoginPage() {
     setAvailableSmallGroups([]);
     setAvailableNationalCoordinators([]);
     setAvailableSiteCoordinators([]);
-    setAvailableSmallGroupLeaders([]);
+    setAvailableSmallGroupPersonnel([]);
 
     if (selectedRole === ROLES.NATIONAL_COORDINATOR) {
       setAvailableNationalCoordinators(
-        mockUsers.filter(u => u.role === ROLES.NATIONAL_COORDINATOR)
+        mockUsers.filter(u => u.role === ROLES.NATIONAL_COORDINATOR && u.status !== 'inactive')
       );
     }
   }, [selectedRole]);
@@ -54,12 +60,12 @@ export default function LoginPage() {
   // Populate site coordinators or small groups when site changes
   useEffect(() => {
     setSelectedSmallGroupId("");
-    setSelectedUserId(""); // Reset user ID if site changes
-    setAvailableSmallGroupLeaders([]); 
+    setSelectedUserId(""); 
+    setAvailableSmallGroupPersonnel([]); 
 
     if (selectedRole === ROLES.SITE_COORDINATOR && selectedSiteId) {
       setAvailableSiteCoordinators(
-        mockUsers.filter(u => u.role === ROLES.SITE_COORDINATOR && u.siteId === selectedSiteId)
+        mockUsers.filter(u => u.role === ROLES.SITE_COORDINATOR && u.siteId === selectedSiteId && u.status !== 'inactive')
       );
     } else {
       setAvailableSiteCoordinators([]);
@@ -72,19 +78,29 @@ export default function LoginPage() {
     }
   }, [selectedSiteId, selectedRole]);
 
-  // Populate small group leaders when small group changes
+  // Populate small group personnel (Leader, Logistics, Finance) when small group changes
   useEffect(() => {
-    setSelectedUserId(""); // Reset user ID if SG changes
+    setSelectedUserId(""); 
     if (selectedRole === ROLES.SMALL_GROUP_LEADER && selectedSmallGroupId) {
       const sg = mockSmallGroups.find(s => s.id === selectedSmallGroupId);
-      if (sg?.leaderId) {
-        setAvailableSmallGroupLeaders(mockUsers.filter(u => u.id === sg.leaderId && u.role === ROLES.SMALL_GROUP_LEADER));
-      } else {
-         // If no explicit leader, could list users eligible to be leaders for this SG, or an empty list
-        setAvailableSmallGroupLeaders([]);
+      const personnel: UserOption[] = [];
+      if (sg) {
+        if (sg.leaderId) {
+          const leader = mockUsers.find(u => u.id === sg.leaderId && u.status !== 'inactive');
+          if (leader) personnel.push({ id: leader.id, name: leader.name, displayLabel: `${leader.name} (Leader)` });
+        }
+        if (sg.logisticsAssistantId) {
+          const logistics = mockUsers.find(u => u.id === sg.logisticsAssistantId && u.status !== 'inactive');
+          if (logistics) personnel.push({ id: logistics.id, name: logistics.name, displayLabel: `${logistics.name} (Logistics Assistant)` });
+        }
+        if (sg.financeAssistantId) {
+          const finance = mockUsers.find(u => u.id === sg.financeAssistantId && u.status !== 'inactive');
+          if (finance) personnel.push({ id: finance.id, name: finance.name, displayLabel: `${finance.name} (Finance Assistant)` });
+        }
       }
+      setAvailableSmallGroupPersonnel(personnel);
     } else {
-      setAvailableSmallGroupLeaders([]);
+      setAvailableSmallGroupPersonnel([]);
     }
   }, [selectedSmallGroupId, selectedRole]);
 
@@ -212,7 +228,7 @@ export default function LoginPage() {
                                     {user.name}
                                 </SelectItem>
                             )) : (
-                                <SelectItem value="" disabled>No coordinators for selected site</SelectItem>
+                                <SelectItem value="" disabled>No active coordinators for selected site</SelectItem>
                             )}
                         </SelectContent>
                     </Select>
@@ -242,18 +258,18 @@ export default function LoginPage() {
 
             {selectedRole === ROLES.SMALL_GROUP_LEADER && selectedSmallGroupId && (
                  <div className="space-y-2">
-                    <Label htmlFor="sg-leader-select" className="text-sm font-medium">Select Small Group Leader</Label>
-                    <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={availableSmallGroupLeaders.length === 0}>
-                        <SelectTrigger id="sg-leader-select" className="w-full text-base">
+                    <Label htmlFor="sg-personnel-select" className="text-sm font-medium">Select Your Name/Function</Label>
+                    <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={availableSmallGroupPersonnel.length === 0}>
+                        <SelectTrigger id="sg-personnel-select" className="w-full text-base">
                             <SelectValue placeholder="Choose your name" />
                         </SelectTrigger>
                         <SelectContent>
-                            {availableSmallGroupLeaders.length > 0 ? availableSmallGroupLeaders.map((user) => (
-                                <SelectItem key={user.id} value={user.id} className="text-base">
-                                    {user.name}
+                            {availableSmallGroupPersonnel.length > 0 ? availableSmallGroupPersonnel.map((person) => (
+                                <SelectItem key={person.id} value={person.id} className="text-base">
+                                    {person.displayLabel}
                                 </SelectItem>
                             )) : (
-                                <SelectItem value="" disabled>No designated leader for this group</SelectItem>
+                                <SelectItem value="" disabled>No assigned personnel for this group</SelectItem>
                             )}
                         </SelectContent>
                     </Select>
@@ -270,4 +286,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

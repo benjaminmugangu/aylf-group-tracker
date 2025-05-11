@@ -23,6 +23,8 @@ export interface SmallGroup {
   name: string;
   siteId: string;
   leaderId?: string; // Current leader - made optional for creation
+  logisticsAssistantId?: string; // New: For logistics assistant
+  financeAssistantId?: string; // New: For finance assistant
 }
 
 export interface Activity {
@@ -166,4 +168,12 @@ export interface TransactionFormData {
 export interface SiteFormData {
   name: string;
   coordinatorId?: string;
+}
+
+// Update SmallGroupFormData to include assistant IDs
+export interface SmallGroupFormData {
+  name: string;
+  leaderId?: string;
+  logisticsAssistantId?: string;
+  financeAssistantId?: string;
 }

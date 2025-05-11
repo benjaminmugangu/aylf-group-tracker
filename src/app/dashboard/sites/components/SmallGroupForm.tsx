@@ -19,46 +19,60 @@ import { Users, Save } from "lucide-react";
 export interface SmallGroupFormData {
   name: string;
   leaderId?: string;
+  logisticsAssistantId?: string;
+  financeAssistantId?: string;
 }
 
 const smallGroupFormSchema = z.object({
   name: z.string().min(3, "Small group name must be at least 3 characters."),
   leaderId: z.string().optional(),
+  logisticsAssistantId: z.string().optional(),
+  financeAssistantId: z.string().optional(),
 });
 
-const NO_LEADER_VALUE = "__NO_LEADER_VALUE__";
+const NO_LEADER_VALUE = "__NO_LEADER_VALUE__"; // Used for clearing selection
 
 interface SmallGroupFormProps {
   smallGroup?: SmallGroup; // For editing
-  siteId: string; // To filter potential leaders and associate the SG
+  siteId: string; 
   onSubmitForm: (data: SmallGroupFormData) => Promise<void>;
-  // Add other props like available leaders if fetched from a higher level
 }
 
 export function SmallGroupForm({ smallGroup, siteId, onSubmitForm }: SmallGroupFormProps) {
   const { control, handleSubmit, register, formState: { errors, isSubmitting }, reset } = useForm<SmallGroupFormData>({
     resolver: zodResolver(smallGroupFormSchema),
-    defaultValues: smallGroup ? { name: smallGroup.name, leaderId: smallGroup.leaderId } : {
+    defaultValues: smallGroup ? { 
+      name: smallGroup.name, 
+      leaderId: smallGroup.leaderId,
+      logisticsAssistantId: smallGroup.logisticsAssistantId,
+      financeAssistantId: smallGroup.financeAssistantId,
+    } : {
       name: "",
       leaderId: undefined,
+      logisticsAssistantId: undefined,
+      financeAssistantId: undefined,
     },
   });
 
-  const availableLeaders = useMemo(() => {
+  // Available users for leadership roles (main leader, assistants)
+  // Could be refined based on specific role eligibility if needed
+  const availablePersonnel = useMemo(() => {
     return mockUsers.filter(user => 
-      // User is a Small Group Leader and either unassigned or assigned to this specific small group
-      (user.role === ROLES.SMALL_GROUP_LEADER && (!user.smallGroupId || user.smallGroupId === smallGroup?.id)) ||
-      // User is the Site Coordinator of the current site (can also lead an SG)
-      (user.role === ROLES.SITE_COORDINATOR && user.siteId === siteId) ||
-      // User is a National Coordinator (can also lead an SG)
-      user.role === ROLES.NATIONAL_COORDINATOR
+      user.status !== 'inactive' && (
+        // User is a Small Group Leader and either unassigned or assigned to this specific small group
+        (user.role === ROLES.SMALL_GROUP_LEADER && (!user.smallGroupId || user.smallGroupId === smallGroup?.id)) ||
+        // User is the Site Coordinator of the current site (can also lead/assist an SG)
+        (user.role === ROLES.SITE_COORDINATOR && user.siteId === siteId) ||
+        // User is a National Coordinator (can also lead/assist an SG)
+        user.role === ROLES.NATIONAL_COORDINATOR
+      )
     );
   }, [smallGroup, siteId]);
 
   const processSubmit = async (data: SmallGroupFormData) => {
     await onSubmitForm(data);
     if (!smallGroup) {
-      reset(); // Reset form only if creating
+      reset(); 
     }
   };
 
@@ -99,7 +113,7 @@ export function SmallGroupForm({ smallGroup, siteId, onSubmitForm }: SmallGroupF
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={NO_LEADER_VALUE}>None (Unassigned)</SelectItem>
-                    {availableLeaders.map((user: User) => (
+                    {availablePersonnel.map((user: User) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name} ({user.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})
                       </SelectItem>
@@ -109,10 +123,71 @@ export function SmallGroupForm({ smallGroup, siteId, onSubmitForm }: SmallGroupF
               )}
             />
             {errors.leaderId && <p className="text-sm text-destructive mt-1">{errors.leaderId.message}</p>}
-            <p className="text-xs text-muted-foreground mt-1">
-              You can assign a leader later. Lists unassigned Small Group Leaders, the Site Coordinator of this site, or National Coordinators.
-            </p>
           </div>
+
+          <div>
+            <Label htmlFor="logisticsAssistantId">Logistics Assistant (Optional)</Label>
+            <Controller
+              name="logisticsAssistantId"
+              control={control}
+              render={({ field }) => (
+                <Select 
+                  onValueChange={(valueFromSelect) => {
+                    const actualValueToSet = valueFromSelect === NO_LEADER_VALUE ? undefined : valueFromSelect;
+                    field.onChange(actualValueToSet);
+                  }} 
+                  value={field.value || NO_LEADER_VALUE}
+                >
+                  <SelectTrigger id="logisticsAssistantId" className="mt-1">
+                    <SelectValue placeholder="Select Logistics Assistant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_LEADER_VALUE}>None (Unassigned)</SelectItem>
+                    {availablePersonnel.map((user: User) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.logisticsAssistantId && <p className="text-sm text-destructive mt-1">{errors.logisticsAssistantId.message}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="financeAssistantId">Finance Assistant (Optional)</Label>
+            <Controller
+              name="financeAssistantId"
+              control={control}
+              render={({ field }) => (
+                <Select 
+                  onValueChange={(valueFromSelect) => {
+                    const actualValueToSet = valueFromSelect === NO_LEADER_VALUE ? undefined : valueFromSelect;
+                    field.onChange(actualValueToSet);
+                  }} 
+                  value={field.value || NO_LEADER_VALUE}
+                >
+                  <SelectTrigger id="financeAssistantId" className="mt-1">
+                    <SelectValue placeholder="Select Finance Assistant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_LEADER_VALUE}>None (Unassigned)</SelectItem>
+                    {availablePersonnel.map((user: User) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.financeAssistantId && <p className="text-sm text-destructive mt-1">{errors.financeAssistantId.message}</p>}
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-1">
+              Leaders and assistants can be chosen from unassigned Small Group Leaders, the Site Coordinator of this site, or National Coordinators. Ensure gender considerations for assistants if applicable.
+          </p>
 
           <Button type="submit" className="w-full py-3 text-base" disabled={isSubmitting}>
             <Save className="mr-2 h-5 w-5" />
