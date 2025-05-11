@@ -7,19 +7,21 @@ export interface User {
   role: Role;
   siteId?: string;
   smallGroupId?: string;
+  mandateStartDate?: string; // ISO date string
+  mandateEndDate?: string;   // ISO date string, if ended
 }
 
 export interface Site {
   id: string;
   name:string;
-  coordinatorId: string;
+  coordinatorId: string; // Current coordinator
 }
 
 export interface SmallGroup {
   id: string;
   name: string;
   siteId: string;
-  leaderId: string;
+  leaderId: string; // Current leader
 }
 
 export interface Activity {
@@ -106,3 +108,5 @@ export interface Transaction {
   relatedSiteId?: string; 
   relatedSmallGroupId?: string; 
 }
+
+```

@@ -3,35 +3,35 @@ import type { User, Activity, Member, Report, Site, SmallGroup, Transaction } fr
 import { ROLES } from "@/lib/constants";
 
 export const mockUsers: User[] = [
-  { id: "user_nat_1", name: "Alice National", email: "alice@aylf.org", role: ROLES.NATIONAL_COORDINATOR },
-  { id: "user_site_beni", name: "Coordinator Beni", email: "beni@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_beni" },
-  { id: "user_sg_beni_alumni", name: "Leader Beni Alumni", email: "beni.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_beni", smallGroupId: "sg_beni_alumni" },
-  { id: "user_site_bukavu", name: "Coordinator Bukavu", email: "bukavu@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_bukavu" },
-  { id: "user_sg_bukavu_alumni", name: "Leader Bukavu Alumni", email: "bukavu.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_bukavu", smallGroupId: "sg_bukavu_alumni" },
-  { id: "user_site_bunia", name: "Coordinator Bunia", email: "bunia@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_bunia" },
-  { id: "user_sg_bunia_alumni", name: "Leader Bunia Alumni", email: "bunia.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_bunia", smallGroupId: "sg_bunia_alumni" },
-  { id: "user_site_butembo", name: "Coordinator Butembo", email: "butembo@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_butembo" },
-  { id: "user_sg_butembo_alumni", name: "Leader Butembo Alumni", email: "butembo.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_butembo", smallGroupId: "sg_butembo_alumni" },
-  { id: "user_site_goma", name: "Coordinator Goma", email: "goma@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_goma" },
-  { id: "user_sg_goma_alumni", name: "Leader Goma Alumni", email: "goma.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_goma", smallGroupId: "sg_goma_alumni" },
-  { id: "user_site_kalemie", name: "Coordinator Kalemie", email: "kalemie@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kalemie" },
-  { id: "user_sg_kalemie_alumni", name: "Leader Kalemie Alumni", email: "kalemie.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kalemie", smallGroupId: "sg_kalemie_alumni" },
-  { id: "user_site_kinshasa", name: "Coordinator Kinshasa", email: "kinshasa@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kinshasa" },
-  { id: "user_sg_kinshasa_alumni", name: "Leader Kinshasa Alumni", email: "kinshasa.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kinshasa", smallGroupId: "sg_kinshasa_alumni" },
-  { id: "user_site_kisangani", name: "Coordinator Kisangani", email: "kisangani@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kisangani"},
-  { id: "user_sg_kisangani_alumni", name: "Leader Kisangani Alumni", email: "kisangani.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kisangani", smallGroupId: "sg_kisangani_alumni" },
-  { id: "user_site_kolwezi", name: "Coordinator Kolwezi", email: "kolwezi@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kolwezi"},
-  { id: "user_sg_kolwezi_alumni", name: "Leader Kolwezi Alumni", email: "kolwezi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kolwezi", smallGroupId: "sg_kolwezi_alumni" },
-  { id: "user_site_lubumbashi", name: "Coordinator Lubumbashi", email: "lubumbashi@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_lubumbashi" },
-  { id: "user_sg_lubumbashi_alumni", name: "Leader Lubumbashi Alumni", email: "lubumbashi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_lubumbashi", smallGroupId: "sg_lubumbashi_alumni" },
-  { id: "user_site_uvira", name: "Coordinator Uvira", email: "uvira@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_uvira" },
-  { id: "user_sg_uvira_alumni", name: "Leader Uvira Alumni", email: "uvira.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_uvira", smallGroupId: "sg_uvira_alumni" },
+  { id: "user_nat_1", name: "Alice National", email: "alice@aylf.org", role: ROLES.NATIONAL_COORDINATOR, mandateStartDate: "2020-01-01" },
+  { id: "user_site_beni", name: "Coordinator Beni", email: "beni@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_beni", mandateStartDate: "2022-01-01" },
+  { id: "user_sg_beni_alumni", name: "Leader Beni Alumni", email: "beni.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_beni", smallGroupId: "sg_beni_alumni", mandateStartDate: "2022-03-01", mandateEndDate: "2023-12-31" }, // Past leader
+  { id: "user_site_bukavu", name: "Coordinator Bukavu", email: "bukavu@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_bukavu", mandateStartDate: "2021-06-15" },
+  { id: "user_sg_bukavu_alumni", name: "Leader Bukavu Alumni", email: "bukavu.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_bukavu", smallGroupId: "sg_bukavu_alumni", mandateStartDate: "2021-08-01" },
+  { id: "user_site_bunia", name: "Coordinator Bunia", email: "bunia@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_bunia", mandateStartDate: "2022-02-10", mandateEndDate: "2024-01-10" }, // Past Coordinator
+  { id: "user_sg_bunia_alumni", name: "Leader Bunia Alumni", email: "bunia.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_bunia", smallGroupId: "sg_bunia_alumni", mandateStartDate: "2022-04-01" },
+  { id: "user_site_butembo", name: "Coordinator Butembo", email: "butembo@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_butembo", mandateStartDate: "2023-01-20" },
+  { id: "user_sg_butembo_alumni", name: "Leader Butembo Alumni", email: "butembo.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_butembo", smallGroupId: "sg_butembo_alumni", mandateStartDate: "2023-03-15" },
+  { id: "user_site_goma", name: "Coordinator Goma", email: "goma@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_goma", mandateStartDate: "2020-11-01" },
+  { id: "user_sg_goma_alumni", name: "Leader Goma Alumni", email: "goma.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_goma", smallGroupId: "sg_goma_alumni", mandateStartDate: "2020-12-01" },
+  { id: "user_site_kalemie", name: "Coordinator Kalemie", email: "kalemie@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kalemie", mandateStartDate: "2023-05-01" },
+  { id: "user_sg_kalemie_alumni", name: "Leader Kalemie Alumni", email: "kalemie.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kalemie", smallGroupId: "sg_kalemie_alumni", mandateStartDate: "2023-06-10" },
+  { id: "user_site_kinshasa", name: "Coordinator Kinshasa", email: "kinshasa@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kinshasa", mandateStartDate: "2019-09-01" },
+  { id: "user_sg_kinshasa_alumni", name: "Leader Kinshasa Alumni", email: "kinshasa.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kinshasa", smallGroupId: "sg_kinshasa_alumni", mandateStartDate: "2019-10-15" },
+  { id: "user_site_kisangani", name: "Coordinator Kisangani", email: "kisangani@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kisangani", mandateStartDate: "2022-07-01"},
+  { id: "user_sg_kisangani_alumni", name: "Leader Kisangani Alumni", email: "kisangani.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kisangani", smallGroupId: "sg_kisangani_alumni", mandateStartDate: "2022-08-20" },
+  { id: "user_site_kolwezi", name: "Coordinator Kolwezi", email: "kolwezi@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_kolwezi", mandateStartDate: "2023-02-01"},
+  { id: "user_sg_kolwezi_alumni", name: "Leader Kolwezi Alumni", email: "kolwezi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_kolwezi", smallGroupId: "sg_kolwezi_alumni", mandateStartDate: "2023-04-11" },
+  { id: "user_site_lubumbashi", name: "Coordinator Lubumbashi", email: "lubumbashi@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_lubumbashi", mandateStartDate: "2020-05-05" },
+  { id: "user_sg_lubumbashi_alumni", name: "Leader Lubumbashi Alumni", email: "lubumbashi.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_lubumbashi", smallGroupId: "sg_lubumbashi_alumni", mandateStartDate: "2020-06-25" },
+  { id: "user_site_uvira", name: "Coordinator Uvira", email: "uvira@aylf.org", role: ROLES.SITE_COORDINATOR, siteId: "site_uvira", mandateStartDate: "2022-10-01" },
+  { id: "user_sg_uvira_alumni", name: "Leader Uvira Alumni", email: "uvira.alumni@aylf.org", role: ROLES.SMALL_GROUP_LEADER, siteId: "site_uvira", smallGroupId: "sg_uvira_alumni", mandateStartDate: "2022-11-11" },
 ];
 
 export const mockSites: Site[] = [
   { id: "site_beni", name: "Beni", coordinatorId: "user_site_beni" },
   { id: "site_bukavu", name: "Bukavu", coordinatorId: "user_site_bukavu" },
-  { id: "site_bunia", name: "Bunia", coordinatorId: "user_site_bunia" },
+  { id: "site_bunia", name: "Bunia", coordinatorId: "user_site_bunia" }, // Coordinator for Bunia has an end date
   { id: "site_butembo", name: "Butembo", coordinatorId: "user_site_butembo" },
   { id: "site_goma", name: "Goma", coordinatorId: "user_site_goma" },
   { id: "site_kalemie", name: "Kalemie", coordinatorId: "user_site_kalemie" },
@@ -44,7 +44,7 @@ export const mockSites: Site[] = [
 
 export const mockSmallGroups: SmallGroup[] = [
   // Beni
-  { id: "sg_beni_alumni", name: "ALUMNI", siteId: "site_beni", leaderId: "user_sg_beni_alumni" },
+  { id: "sg_beni_alumni", name: "ALUMNI", siteId: "site_beni", leaderId: "user_sg_beni_alumni" }, // Leader has an end date
   { id: "sg_beni_isc", name: "ISC", siteId: "site_beni", leaderId: "user_site_beni" }, 
   { id: "sg_beni_uac", name: "UAC", siteId: "site_beni", leaderId: "user_site_beni" },
   { id: "sg_beni_ucbc", name: "UCBC", siteId: "site_beni", leaderId: "user_site_beni" },
@@ -58,8 +58,8 @@ export const mockSmallGroups: SmallGroup[] = [
   { id: "sg_bukavu_uob", name: "UOB", siteId: "site_bukavu", leaderId: "user_site_bukavu" },
   // Bunia
   { id: "sg_bunia_alumni", name: "ALUMNI", siteId: "site_bunia", leaderId: "user_sg_bunia_alumni" },
-  { id: "sg_bunia_unibu", name: "UNIBU", siteId: "site_bunia", leaderId: "user_site_bunia" },
-  { id: "sg_bunia_unshalom", name: "UN.SHALOM", siteId: "site_bunia", leaderId: "user_site_bunia" },
+  { id: "sg_bunia_unibu", name: "UNIBU", siteId: "site_bunia", leaderId: "user_site_bunia" }, // Site coordinator is past
+  { id: "sg_bunia_unshalom", name: "UN.SHALOM", siteId: "site_bunia", leaderId: "user_site_bunia" }, // Site coordinator is past
   // Butembo
   { id: "sg_butembo_alumni", name: "ALUMNI", siteId: "site_butembo", leaderId: "user_sg_butembo_alumni" },
   { id: "sg_butembo_uac", name: "UAC", siteId: "site_butembo", leaderId: "user_site_butembo" },
@@ -186,6 +186,7 @@ export const mockReports: Report[] = [
     submissionDate: "2024-07-29", 
     level: "small_group", 
     smallGroupId: "sg_beni_alumni", 
+    siteId: "site_beni", // Added siteId for consistency
     activityType: "Small Group Meeting",
     thematic: "Purpose Driven Life - Chapters 1-5",
     speaker: "N/A",
@@ -224,7 +225,8 @@ export const mockReports: Report[] = [
     submittedBy: "user_sg_kinshasa_unikin", 
     submissionDate: "2024-06-18", 
     level: "small_group", 
-    smallGroupId: "sg_kinshasa_unikin", 
+    smallGroupId: "sg_kinshasa_unikin",
+    siteId: "site_kinshasa", // Added siteId for consistency 
     activityType: "Small Group Meeting",
     thematic: "Prayer for Academic Success",
     speaker: "Pastor John Mark",
