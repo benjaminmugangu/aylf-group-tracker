@@ -180,6 +180,9 @@ export default function CertificatesPage() {
       {selectedUserForCertificate && (
         <Dialog open={isCertificateModalOpen} onOpenChange={setIsCertificateModalOpen}>
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-[900px] p-0 overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="sr-only">Certificate of Service for {selectedUserForCertificate.name}</DialogTitle>
+            </DialogHeader>
             <PrintableCertificate 
                 user={selectedUserForCertificate} 
                 entityName={getEntityName(selectedUserForCertificate)}
