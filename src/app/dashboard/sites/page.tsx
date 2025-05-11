@@ -7,18 +7,20 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, PlusCircle, Edit, Trash2, Eye } from "lucide-react";
+import { Building, PlusCircle, Edit, Trash2, Eye, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockSites, mockSmallGroups, mockMembers } from "@/lib/mockData"; // mockUsers removed as direct coordinator lookup logic changes
+import { mockSites, mockSmallGroups, mockMembers } from "@/lib/mockData"; 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Site } from "@/lib/types";
+import { StatCard } from "@/components/shared/StatCard";
 
 // New component for the analytics part to isolate useEffect
 function SitePerformanceAnalytics() {
   const [totalSiteMembers, setTotalSiteMembers] = useState<string | null>(null);
   const [avgActivities, setAvgActivities] = useState<string | null>(null);
+  const totalSmallGroupsCount = mockSmallGroups.length; // Not date filtered
 
   useEffect(() => {
     // These will only run on the client, after initial hydration
@@ -29,27 +31,36 @@ function SitePerformanceAnalytics() {
   }, []); // Empty dependency array ensures this runs once on mount
 
   return (
-    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="border p-4 rounded-lg bg-secondary/30 text-center">
-            <h4 className="text-2xl font-bold text-primary">{mockSites.length}</h4>
-            <p className="text-sm text-muted-foreground">Total Sites</p>
-        </div>
-        <div className="border p-4 rounded-lg bg-secondary/30 text-center">
-            {totalSiteMembers !== null ? (
-              <h4 className="text-2xl font-bold text-primary">{totalSiteMembers}</h4>
-            ) : (
-              <Skeleton className="h-7 w-12 mx-auto mb-1" />
-            )}
-            <p className="text-sm text-muted-foreground">Total Site Members</p>
-        </div>
-          <div className="border p-4 rounded-lg bg-secondary/30 text-center">
+    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard 
+            title="Total Sites" 
+            value={mockSites.length} 
+            icon={Building} 
+            description="Number of operational sites"
+        />
+        <StatCard 
+            title="Total Small Groups" 
+            value={totalSmallGroupsCount} 
+            icon={UsersRound} 
+            description="Across all sites"
+            href="/dashboard/sites" // Pointing to sites page for drill-down
+        />
+        <StatCard 
+            title="Total Site Members" 
+            value={totalSiteMembers !== null ? totalSiteMembers : <Skeleton className="h-7 w-12 inline-block" />} 
+            icon={UsersRound} 
+            description="Members affiliated with any site"
+            href="/dashboard/members"
+        />
+        {/* Placeholder for average activities - can be made more dynamic later */}
+        {/* <div className="border p-4 rounded-lg bg-secondary/30 text-center">
             {avgActivities !== null ? (
               <h4 className="text-2xl font-bold text-primary">{avgActivities}</h4>
             ) : (
               <Skeleton className="h-7 w-10 mx-auto mb-1" />
             )}
             <p className="text-sm text-muted-foreground">Average Activities per Site (Mock)</p>
-        </div>
+        </div> */}
     </div>
   );
 }
@@ -182,8 +193,8 @@ export default function ManageSitesPage() {
 
       <Card className="mt-8 shadow-lg">
         <CardHeader>
-            <CardTitle>Site Performance Analytics</CardTitle>
-            <CardDescription>Overall metrics for site engagement, growth, and activity levels.</CardDescription>
+            <CardTitle>Overall Site Analytics</CardTitle>
+            <CardDescription>Key metrics for site engagement, growth, and activity levels across the network.</CardDescription>
         </CardHeader>
         <CardContent>
             <SitePerformanceAnalytics />
@@ -193,3 +204,4 @@ export default function ManageSitesPage() {
     </RoleBasedGuard>
   );
 }
+

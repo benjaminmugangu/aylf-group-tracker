@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROLES } from "@/lib/constants";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { mockActivities, mockMembers, mockReports, mockSites, mockSmallGroups, mockTransactions } from "@/lib/mockData";
-import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UsersRound, Briefcase, Lightbulb, Zap } from "lucide-react"; // Removed UserCheck, UserX, CheckCircle, Loader2 as they are not used directly here
+import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UsersRound, Briefcase, Lightbulb, Zap } from "lucide-react"; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ const chartConfigMembers = {
   nonStudent: { label: "Non-Students", color: "hsl(var(--chart-4))" },
 };
 
-export default function DashboardPage() { // Renamed component to avoid conflict
+export default function DashboardPage() { 
   const { currentUser } = useAuth();
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
 
@@ -134,7 +134,7 @@ export default function DashboardPage() { // Renamed component to avoid conflict
               value={totalSmallGroups} 
               icon={UsersRound} 
               description="Active small groups"
-              href="/dashboard/members" 
+              href="/dashboard/sites" // Changed from /dashboard/members
             />
             <StatCard 
               title="Net Balance" 
@@ -157,7 +157,7 @@ export default function DashboardPage() { // Renamed component to avoid conflict
                title="Site Small Groups" 
                value={mockSmallGroups.filter(sg => sg.siteId === currentUser?.siteId).length} // Small group count not date filtered
                icon={UsersRound}
-               href="/dashboard/members" 
+               href={currentUser?.siteId ? `/dashboard/sites/${currentUser.siteId}` : "/dashboard/sites"} // Changed from /dashboard/members
               />
           </>
         )}
@@ -301,3 +301,4 @@ export default function DashboardPage() { // Renamed component to avoid conflict
     </RoleBasedGuard>
   );
 }
+
