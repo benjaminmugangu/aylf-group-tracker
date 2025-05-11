@@ -20,6 +20,8 @@ const siteFormSchema = z.object({
   coordinatorId: z.string().optional(), // Optional: A site can be created without an immediate coordinator
 });
 
+const NO_COORDINATOR_VALUE = "__NO_COORDINATOR_VALUE__";
+
 interface SiteFormProps {
   site?: Site; // For editing
   onSubmitForm: (data: SiteFormData) => Promise<void>;
@@ -74,12 +76,18 @@ export function SiteForm({ site, onSubmitForm }: SiteFormProps) {
               name="coordinatorId"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value || ""}>
+                <Select 
+                  onValueChange={(valueFromSelect) => {
+                    const actualValueToSet = valueFromSelect === NO_COORDINATOR_VALUE ? undefined : valueFromSelect;
+                    field.onChange(actualValueToSet);
+                  }} 
+                  value={field.value || NO_COORDINATOR_VALUE}
+                >
                   <SelectTrigger id="coordinatorId" className="mt-1">
                     <SelectValue placeholder="Select a coordinator" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value={NO_COORDINATOR_VALUE}>None</SelectItem>
                     {availableCoordinators.map((user: User) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name} ({user.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})
