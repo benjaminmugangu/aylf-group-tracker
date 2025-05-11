@@ -85,12 +85,47 @@ export default function DashboardPage() {
     .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0,3);
 
+  const pageDescription = useMemo(() => {
+    if (!currentUser) return `Filter: ${dateFilter.display}`;
+
+    let assignmentText = "";
+    if (currentUser.role === ROLES.NATIONAL_COORDINATOR) {
+      assignmentText = "Coordinator of AYLF/RDC.";
+    } else if (currentUser.role === ROLES.SITE_COORDINATOR && currentUser.siteId) {
+      const site = mockSites.find(s => s.id === currentUser.siteId);
+      assignmentText = `Coordinator of ${site?.name || 'your site'}.`;
+    } else if (currentUser.role === ROLES.SMALL_GROUP_LEADER && currentUser.smallGroupId) {
+      const sg = mockSmallGroups.find(s => s.id === currentUser.smallGroupId);
+      if (sg) {
+        const site = mockSites.find(s => s.id === sg.siteId);
+        let sgUserRole = "Member"; // Default, should be more specific
+        if (sg.leaderId === currentUser.id) {
+          sgUserRole = "Leader";
+        } else if (sg.logisticsAssistantId === currentUser.id) {
+          sgUserRole = "Logistics Assistant";
+        } else if (sg.financeAssistantId === currentUser.id) {
+          sgUserRole = "Finance Assistant";
+        }
+        assignmentText = `${sgUserRole} of ${sg.name || 'your small group'}${site ? ` (${site.name})` : ''}.`;
+      } else {
+        // This case implies the user is logged in as SG Leader but their smallGroupId is not found
+        // or their ID doesn't match any specific role in the found SG.
+        // Defaulting to a generic SG leader message.
+        assignmentText = "Leader of your small group.";
+      }
+    } else {
+      // Fallback for any other unhandled role or missing assignment info
+      assignmentText = "Overview.";
+    }
+    return `${assignmentText} Filter: ${dateFilter.display}`;
+  }, [currentUser, dateFilter]);
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title={`Welcome, ${currentUser?.name || 'User'}!`}
-        description={`${currentUser?.role === ROLES.NATIONAL_COORDINATOR ? "National overview." : (currentUser?.role === ROLES.SITE_COORDINATOR ? "Site overview." : "Small group overview.")} Filter: ${dateFilter.display}`}
+        description={pageDescription}
         icon={currentUser?.role === ROLES.NATIONAL_COORDINATOR ? Building : (currentUser?.role === ROLES.SITE_COORDINATOR ? ListChecks : Users)}
       />
 
@@ -276,7 +311,11 @@ export default function DashboardPage() {
             <div key={activity.id} className="mb-4 pb-4 border-b last:border-b-0 last:pb-0 last:mb-0">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-semibold text-md">{activity.name}</h4>
+                  <Link href={`/dashboard/activities/${activity.id}`} passHref>
+                    <Button variant="link" className="p-0 h-auto text-left">
+                       <h4 className="font-semibold text-md hover:underline">{activity.name}</h4>
+                    </Button>
+                  </Link>
                   <p className="text-sm text-muted-foreground">{activity.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} level - {new Date(activity.date).toLocaleDateString()}</p>
                 </div>
                 <span className={`px-2 py-1 text-xs rounded-full font-medium ${
@@ -301,4 +340,3 @@ export default function DashboardPage() {
     </RoleBasedGuard>
   );
 }
-
