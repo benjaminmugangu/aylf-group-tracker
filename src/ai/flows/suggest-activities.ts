@@ -63,6 +63,26 @@ const suggestActivitiesPrompt = ai.definePrompt({
   Consider factors like age range, interests, available resources, and potential impact on member engagement.
   Explain your reasoning behind each suggestion.
   Format your response as a JSON object with "suggestedActivities" (an array of activity names) and "reasoning" (a string explaining the suggestions).`,
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+    ],
+  },
 });
 
 const suggestActivitiesFlow = ai.defineFlow(
@@ -73,6 +93,14 @@ const suggestActivitiesFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await suggestActivitiesPrompt(input);
-    return output!;
+    // The non-null assertion operator (!) assumes output will always be non-null if the prompt succeeds.
+    // If the prompt can succeed but return null output under some conditions (e.g. model refuses to answer due to safety but doesn't error),
+    // more robust error handling or a check for output might be needed here.
+    // However, typically, if the model fails to generate valid output per the schema or an API error occurs, suggestActivitiesPrompt itself would throw.
+    if (!output) {
+        throw new Error("AI model failed to generate valid suggestions. The output was empty.");
+    }
+    return output;
   }
 );
+
