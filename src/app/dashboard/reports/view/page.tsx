@@ -5,16 +5,18 @@ import React, { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ReportTable } from "./components/ReportTable";
 import { ReportCard } from "./components/ReportCard";
-import { mockReports, mockSites, mockSmallGroups } from "@/lib/mockData"; // Added mockSites and mockSmallGroups
+import { mockReports as initialMockReports, mockSites, mockSmallGroups } from "@/lib/mockData"; // Added mockSites and mockSmallGroups
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIcon, Globe, CalendarDays, Type, Users, Hash, DollarSign, Speaker, UserCheck } from "lucide-react"; // Added icons
-import type { Report } from "@/lib/types";
+import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIcon, Globe, CalendarDays, Type, Users, Hash, DollarSign, Speaker, UserCheck, Check, ThumbsDown, ThumbsUp, MessageSquare } from "lucide-react"; // Added icons
+import type { Report, ReportStatus } from "@/lib/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -23,21 +25,32 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 
 type ViewMode = "table" | "grid";
 
 export default function ViewReportsPage() {
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  
+  const [reports, setReports] = useState<Report[]>(initialMockReports); // Manage reports in state
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
   const [levelFilter, setLevelFilter] = useState<Report["level"] | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rejectionNotes, setRejectionNotes] = useState("");
+  const [isRejectingReport, setIsRejectingReport] = useState<Report | null>(null);
+
 
   const isMobile = useIsMobile();
 
@@ -49,18 +62,18 @@ export default function ViewReportsPage() {
   useEffect(() => {
     const hash = window.location.hash.substring(1);
     if (hash) {
-      const report = mockReports.find(r => r.id === hash);
+      const report = reports.find(r => r.id === hash);
       if (report) {
         setSelectedReport(report);
         setIsModalOpen(true);
       }
     }
-  }, []);
+  }, [reports]); // Depend on reports state
 
 
   const dateFilteredReports = useMemo(() => {
-    return applyDateFilter(mockReports.map(r => ({...r, date: r.submissionDate})), dateFilter) as Report[];
-  }, [dateFilter]);
+    return applyDateFilter(reports.map(r => ({...r, date: r.submissionDate})), dateFilter) as Report[];
+  }, [reports, dateFilter]);
 
   const fullyFilteredReports = useMemo(() => {
     return dateFilteredReports.filter(report => {
@@ -75,18 +88,41 @@ export default function ViewReportsPage() {
                             (siteName && siteName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (smallGroupName && smallGroupName.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesLevel = levelFilter === "all" || report.level === levelFilter;
-      return matchesSearch && matchesLevel;
+      const matchesStatus = statusFilter === "all" || report.status === statusFilter;
+      return matchesSearch && matchesLevel && matchesStatus;
     }).sort((a,b) => new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime());
-  }, [searchTerm, levelFilter, dateFilteredReports]);
+  }, [searchTerm, levelFilter, statusFilter, dateFilteredReports]);
 
   const handleViewDetails = (reportId: string) => {
-    const report = mockReports.find(r => r.id === reportId);
+    const report = reports.find(r => r.id === reportId);
     if (report) {
       setSelectedReport(report);
       setIsModalOpen(true);
       window.location.hash = reportId; 
     }
   };
+
+  const handleReportStatusUpdate = (reportId: string, newStatus: ReportStatus, notes?: string) => {
+    setReports(prevReports => 
+      prevReports.map(r => 
+        r.id === reportId ? { ...r, status: newStatus, reviewNotes: notes || r.reviewNotes } : r
+      )
+    );
+    setSelectedReport(prev => prev && prev.id === reportId ? {...prev, status: newStatus, reviewNotes: notes || prev.reviewNotes} : prev); // Update selected report in modal
+    toast({
+      title: `Report ${newStatus}`,
+      description: `Report "${reports.find(r=>r.id===reportId)?.title}" has been ${newStatus}.`,
+    });
+  };
+
+  const confirmRejectReport = () => {
+    if (isRejectingReport) {
+      handleReportStatusUpdate(isRejectingReport.id, "rejected", rejectionNotes);
+      setIsRejectingReport(null);
+      setRejectionNotes("");
+    }
+  };
+
 
   const getReportContextName = (report: Report): string | null => {
     if (report.level === "site" && report.siteId) {
@@ -111,6 +147,18 @@ export default function ViewReportsPage() {
       default: return null;
     }
   }
+  
+  const getStatusBadgeInfo = (status?: ReportStatus) => {
+    switch (status) {
+      case "approved":
+        return { variant: "default", icon: <Check className="mr-1.5 h-3.5 w-3.5" />, text: "Approved", className: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-300 dark:border-green-700" };
+      case "rejected":
+        return { variant: "destructive", icon: <ThumbsDown className="mr-1.5 h-3.5 w-3.5" />, text: "Rejected", className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-300 dark:border-red-700" };
+      case "submitted":
+      default:
+        return { variant: "secondary", icon: <MessageSquare className="mr-1.5 h-3.5 w-3.5" />, text: "Submitted", className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700" };
+    }
+  };
 
 
   return (
@@ -140,15 +188,27 @@ export default function ViewReportsPage() {
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
               <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey} />
               <Select value={levelFilter} onValueChange={(value) => setLevelFilter(value as Report["level"] | "all")}>
-                <SelectTrigger className="w-full md:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[150px]">
                   <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue placeholder="Filter by level" />
+                  <SelectValue placeholder="Level" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Levels</SelectItem>
                   <SelectItem value="national">National</SelectItem>
                   <SelectItem value="site">Site</SelectItem>
                   <SelectItem value="small_group">Small Group</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ReportStatus | "all")}>
+                <SelectTrigger className="w-full sm:w-[150px]">
+                   <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="submitted">Submitted</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
               {!isMobile && (
@@ -188,15 +248,27 @@ export default function ViewReportsPage() {
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-2xl">{selectedReport.title}</DialogTitle>
-              <DialogDescription className="flex items-center text-sm">
-                {getLevelIcon(selectedReport.level)}
-                {selectedReport.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                {getReportContextName(selectedReport) && ` - ${getReportContextName(selectedReport)}`}
-                 | Submitted by: {selectedReport.submittedBy} on {new Date(selectedReport.submissionDate).toLocaleDateString()}
-              </DialogDescription>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <DialogDescription className="flex items-center text-sm">
+                  {getLevelIcon(selectedReport.level)}
+                  {selectedReport.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {getReportContextName(selectedReport) && ` - ${getReportContextName(selectedReport)}`}
+                   | Submitted by: {selectedReport.submittedBy} on {new Date(selectedReport.submissionDate).toLocaleDateString()}
+                </DialogDescription>
+                <Badge variant={getStatusBadgeInfo(selectedReport.status).variant as any} className={`${getStatusBadgeInfo(selectedReport.status).className} text-xs px-2 py-1 flex items-center self-start sm:self-center`}>
+                    {getStatusBadgeInfo(selectedReport.status).icon}
+                    {getStatusBadgeInfo(selectedReport.status).text}
+                </Badge>
+              </div>
             </DialogHeader>
             <ScrollArea className="flex-grow pr-6 -mr-6"> 
               <div className="py-4 space-y-6">
+                 {selectedReport.status === "rejected" && selectedReport.reviewNotes && (
+                    <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30">
+                        <h4 className="font-semibold text-destructive mb-1 flex items-center"><MessageSquare className="mr-2 h-4 w-4"/>Rejection Notes:</h4>
+                        <p className="text-sm text-destructive/80 whitespace-pre-wrap">{selectedReport.reviewNotes}</p>
+                    </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                     <div className="flex items-center">
                         <CalendarDays className="mr-2 h-4 w-4 text-primary" />
@@ -269,13 +341,57 @@ export default function ViewReportsPage() {
                 )}
               </div>
             </ScrollArea>
-            <DialogFooter className="mt-auto pt-4 border-t">
+            <DialogFooter className="mt-auto pt-4 border-t items-center">
+              {currentUser?.role === ROLES.NATIONAL_COORDINATOR && selectedReport.status === "submitted" && (
+                <div className="flex gap-2 mr-auto">
+                  <Button 
+                    variant="outline" 
+                    className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700"
+                    onClick={() => handleReportStatusUpdate(selectedReport.id, "approved")}
+                  >
+                    <ThumbsUp className="mr-2 h-4 w-4"/> Approve
+                  </Button>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => setIsRejectingReport(selectedReport)}
+                    >
+                      <ThumbsDown className="mr-2 h-4 w-4"/> Reject
+                    </Button>
+                  </AlertDialogTrigger>
+                </div>
+              )}
               <Button variant="outline" onClick={() => {setIsModalOpen(false); window.location.hash = '';}}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
 
+      {isRejectingReport && (
+         <AlertDialog open={!!isRejectingReport} onOpenChange={(isOpen) => { if(!isOpen) setIsRejectingReport(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reject Report: "{isRejectingReport.title}"</AlertDialogTitle>
+              <AlertDialogDescription>
+                Please provide a reason for rejecting this report. These notes will be visible to the submitter.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Textarea 
+              placeholder="Enter rejection notes here..."
+              value={rejectionNotes}
+              onChange={(e) => setRejectionNotes(e.target.value)}
+              rows={4}
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => { setIsRejectingReport(null); setRejectionNotes(""); }}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmRejectReport} disabled={!rejectionNotes.trim()}>Confirm Rejection</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
     </RoleBasedGuard>
   );
 }
+

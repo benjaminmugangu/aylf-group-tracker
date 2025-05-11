@@ -5,7 +5,7 @@ import type { Report } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit3, Trash2 } from "lucide-react";
+import { Eye, Edit3, Trash2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 
 interface ReportTableProps {
@@ -24,6 +24,18 @@ export function ReportTable({ reports, onViewDetails }: ReportTableProps) {
     }
   }
 
+  const getStatusBadgeInfo = (status: Report["status"]) => {
+    switch (status) {
+      case "approved":
+        return { variant: "default", icon: <CheckCircle className="mr-1 h-3 w-3" />, text: "Approved", className: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-300 dark:border-green-700" };
+      case "rejected":
+        return { variant: "destructive", icon: <XCircle className="mr-1 h-3 w-3" />, text: "Rejected", className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-300 dark:border-red-700" };
+      case "submitted":
+      default:
+        return { variant: "secondary", icon: <AlertCircle className="mr-1 h-3 w-3" />, text: "Submitted", className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700" };
+    }
+  };
+
   if (reports.length === 0) {
     return <p className="text-center text-muted-foreground py-8">No reports found matching your criteria.</p>;
   }
@@ -36,6 +48,7 @@ export function ReportTable({ reports, onViewDetails }: ReportTableProps) {
             <TableHead className="w-[200px]">Title</TableHead>
             <TableHead>Activity Date</TableHead>
             <TableHead>Level</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Activity Type</TableHead>
             <TableHead className="min-w-[150px]">Thematic</TableHead>
             <TableHead>Submitted By</TableHead>
@@ -44,13 +57,21 @@ export function ReportTable({ reports, onViewDetails }: ReportTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {reports.map((report) => (
+          {reports.map((report) => {
+            const statusInfo = getStatusBadgeInfo(report.status);
+            return (
             <TableRow key={report.id}>
               <TableCell className="font-medium truncate max-w-xs" title={report.title}>{report.title}</TableCell>
               <TableCell>{format(new Date(report.activityDate), "PP")}</TableCell>
               <TableCell>
                 <Badge variant="outline" className={`${getLevelBadgeColor(report.level)} border-none`}>
                   {report.level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant={statusInfo.variant as any} className={`${statusInfo.className} text-xs px-1.5 py-0.5 flex items-center`}>
+                  {statusInfo.icon}
+                  {statusInfo.text}
                 </Badge>
               </TableCell>
               <TableCell>{report.activityType}</TableCell>
@@ -63,9 +84,11 @@ export function ReportTable({ reports, onViewDetails }: ReportTableProps) {
                 </Button>
               </TableCell>
             </TableRow>
-          ))}
+          );
+        })}
         </TableBody>
       </Table>
     </div>
   );
 }
+

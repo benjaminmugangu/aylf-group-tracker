@@ -46,6 +46,8 @@ export interface Member {
   joinDate: string; // ISO date string
 }
 
+export type ReportStatus = "submitted" | "approved" | "rejected";
+
 export interface Report {
   id: string;
   title: string;
@@ -67,6 +69,8 @@ export interface Report {
   content: string; // Main narrative/description of the report
   images?: Array<{ name: string; url: string }>; 
   financialSummary?: string; // Optional: for more detailed financial notes beyond amountUsed
+  status: ReportStatus;
+  reviewNotes?: string;
 }
 
 export interface NavItem {
@@ -109,4 +113,3 @@ export interface Transaction {
   relatedSmallGroupId?: string; 
 }
 
-```

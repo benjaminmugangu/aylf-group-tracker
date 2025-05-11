@@ -134,7 +134,7 @@ export const mockMembers: Member[] = [
   { id: "mem_13", name: "Tom Gold", type: "student", siteId: "site_goma", smallGroupId: "sg_goma_ulpgl", joinDate: "2023-08-12" },
 ];
 
-export const mockReports: Report[] = [
+export let mockReports: Report[] = [
   { 
     id: "rep_1", 
     title: "Q2 Leadership Workshop Summary", 
@@ -153,7 +153,8 @@ export const mockReports: Report[] = [
     currency: "USD",
     content: "The Q2 leadership workshop was a success with high engagement from all site coordinators. Key topics included strategic planning and conflict resolution. Breakout sessions were particularly fruitful.", 
     images: [{ name: "workshop_group.jpg", url: "https://picsum.photos/seed/workshop1/400/300" }],
-    financialSummary: "Total expenses: $500 for materials and speaker fees. Income from registration: $200."
+    financialSummary: "Total expenses: $500 for materials and speaker fees. Income from registration: $200.",
+    status: "submitted",
   },
   { 
     id: "rep_2", 
@@ -176,7 +177,8 @@ export const mockReports: Report[] = [
         { name: "outreach_team.jpg", url: "https://picsum.photos/seed/outreach1/400/300" }, 
         { name: "beneficiaries.jpg", url: "https://picsum.photos/seed/beneficiaries1/400/300" }
     ],
-    financialSummary: "Donations received: $300. Expenses for supplies: $250. Net: $50 surplus."
+    financialSummary: "Donations received: $300. Expenses for supplies: $250. Net: $50 surplus.",
+    status: "submitted",
   },
   { 
     id: "rep_3", 
@@ -198,7 +200,8 @@ export const mockReports: Report[] = [
     currency: "USD",
     content: "Completed first 5 chapters of 'Purpose Driven Life'. Rich discussions on purpose, identity, and service. Average attendance: 12 members.",
     images: [{ name: "book_study.jpg", url: "https://picsum.photos/seed/bookstudy/400/300" }],
-    financialSummary: "Refreshments cost $5, self-funded by members."
+    financialSummary: "Refreshments cost $5, self-funded by members.",
+    status: "submitted",
   },
   { 
     id: "rep_4", 
@@ -216,7 +219,9 @@ export const mockReports: Report[] = [
     currency: "USD",
     content: "Successful sports day with over 80 participants. ISIG group won the football tournament. Promoted teamwork and fellowship.",
     images: [{ name: "sports_day_goma.jpg", url: "https://picsum.photos/seed/sportsgoma/400/300" }],
-    financialSummary: "Expenses for equipment and refreshments: $150. Covered by site budget."
+    financialSummary: "Expenses for equipment and refreshments: $150. Covered by site budget.",
+    status: "approved",
+    reviewNotes: "Great event, well documented!"
   },
    { 
     id: "rep_5", 
@@ -238,7 +243,8 @@ export const mockReports: Report[] = [
     currency: "USD",
     content: "Monthly prayer breakfast held with 15 students. Focus on academic success and spiritual growth. Event was well-received.",
     images: [{ name: "prayer_breakfast.jpg", url: "https://picsum.photos/seed/prayerbreakfast/400/300" }],
-    financialSummary: "Cost for breakfast items: $30. Covered by member contributions."
+    financialSummary: "Cost for breakfast items: $30. Covered by member contributions.",
+    status: "submitted",
   },
   {
     id: "rep_goma_ulpgl_1",
@@ -260,7 +266,9 @@ export const mockReports: Report[] = [
     currency: "USD",
     content: "The small group meeting at ULPGL focused on maintaining positive values in a challenging society. Doyenne Semerita Kamundu shared valuable insights, and David Ushindi facilitated the discussion effectively. The session was interactive and well-attended.",
     images: [{ name: "ulpgl_meeting.jpg", url: "https://picsum.photos/seed/ulpglmeeting/400/300" }],
-    financialSummary: "Amount used for refreshments and materials: $11."
+    financialSummary: "Amount used for refreshments and materials: $11.",
+    status: "rejected",
+    reviewNotes: "Please provide more details on the specific outcomes and action points from the discussion."
   }
 ];
 
