@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,20 @@ import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
 import { ROLES } from "@/lib/constants";
 import { mockSites, mockSmallGroups } from "@/lib/mockData";
-import { Save } from "lucide-react";
+import { Save, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const profileFormSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
   email: z.string().email("Invalid email address."),
+  mandateStartDate: z.date().optional().nullable(),
+  mandateEndDate: z.date().optional().nullable(),
+}).refine(data => !data.mandateEndDate || !data.mandateStartDate || (data.mandateEndDate >= data.mandateStartDate), {
+    message: "Mandate end date cannot be before start date.",
+    path: ["mandateEndDate"],
 });
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
@@ -30,17 +39,25 @@ interface ProfileFormProps {
 
 export function ProfileForm({ currentUser, onUpdateProfile, canEdit }: ProfileFormProps) {
   const { toast } = useToast();
-  const { register, handleSubmit, formState: { errors, isSubmitting, isDirty } } = useForm<ProfileFormData>({
+  const { control, register, handleSubmit, formState: { errors, isSubmitting, isDirty } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: currentUser.name || "",
       email: currentUser.email || "",
+      mandateStartDate: currentUser.mandateStartDate ? parseISO(currentUser.mandateStartDate) : undefined,
+      mandateEndDate: currentUser.mandateEndDate ? parseISO(currentUser.mandateEndDate) : undefined,
     },
   });
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      onUpdateProfile(data);
+      const profileUpdateData: Partial<User> = {
+        name: data.name,
+        email: data.email,
+        mandateStartDate: data.mandateStartDate ? data.mandateStartDate.toISOString() : undefined,
+        mandateEndDate: data.mandateEndDate ? data.mandateEndDate.toISOString() : undefined,
+      };
+      onUpdateProfile(profileUpdateData);
       toast({
         title: "Profile Updated",
         description: "Your profile information has been successfully updated.",
@@ -73,12 +90,14 @@ export function ProfileForm({ currentUser, onUpdateProfile, canEdit }: ProfileFo
     return "N/A";
   };
 
+  const isMandateDateEditingAllowed = canEdit && currentUser.role === ROLES.NATIONAL_COORDINATOR;
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle>Personal Information</CardTitle>
         <CardDescription>
-          {canEdit ? "Update your name and email address." : "View your profile details."}
+          {canEdit ? "Update your profile information." : "View your profile details."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -128,29 +147,65 @@ export function ProfileForm({ currentUser, onUpdateProfile, canEdit }: ProfileFo
             </div>
           )}
           
-          {currentUser.mandateStartDate && (
-             <div>
-                <Label htmlFor="mandateStart">Mandate Start Date</Label>
-                <Input 
-                    id="mandateStart" 
-                    value={new Date(currentUser.mandateStartDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} 
-                    disabled 
-                    className="mt-1 bg-muted/50"
-                />
-            </div>
-          )}
-          {currentUser.mandateEndDate && (
-             <div>
-                <Label htmlFor="mandateEnd">Mandate End Date</Label>
-                <Input 
-                    id="mandateEnd" 
-                    value={new Date(currentUser.mandateEndDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} 
-                    disabled 
-                    className="mt-1 bg-muted/50"
-                />
-            </div>
-          )}
+          <div>
+            <Label htmlFor="mandateStartDate">Mandate Start Date</Label>
+            <Controller
+              name="mandateStartDate"
+              control={control}
+              render={({ field }) => (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn("w-full justify-start text-left font-normal mt-1", !field.value && "text-muted-foreground")}
+                      disabled={!isMandateDateEditingAllowed || isSubmitting}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? format(field.value, "PPP") : 
+                        (isMandateDateEditingAllowed ? <span>Pick a date</span> : <span>N/A</span>)
+                      }
+                    </Button>
+                  </PopoverTrigger>
+                  {isMandateDateEditingAllowed && (
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} initialFocus />
+                    </PopoverContent>
+                  )}
+                </Popover>
+              )}
+            />
+            {errors.mandateStartDate && <p className="text-sm text-destructive mt-1">{errors.mandateStartDate.message}</p>}
+          </div>
 
+          <div>
+            <Label htmlFor="mandateEndDate">Mandate End Date</Label>
+             <Controller
+              name="mandateEndDate"
+              control={control}
+              render={({ field }) => (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn("w-full justify-start text-left font-normal mt-1", !field.value && "text-muted-foreground")}
+                      disabled={!isMandateDateEditingAllowed || isSubmitting}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? format(field.value, "PPP") : 
+                        (isMandateDateEditingAllowed ? <span>Pick a date (Optional)</span> : <span>N/A</span>)
+                      }
+                    </Button>
+                  </PopoverTrigger>
+                   {isMandateDateEditingAllowed && (
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} />
+                    </PopoverContent>
+                   )}
+                </Popover>
+              )}
+            />
+            {errors.mandateEndDate && <p className="text-sm text-destructive mt-1">{errors.mandateEndDate.message}</p>}
+          </div>
 
           {canEdit && (
             <Button type="submit" disabled={isSubmitting || !isDirty} className="w-full sm:w-auto">
