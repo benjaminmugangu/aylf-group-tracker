@@ -90,4 +90,3 @@ export function PrintableCertificate({ user, entityName, appName }: PrintableCer
     </div>
   );
 }
-```
