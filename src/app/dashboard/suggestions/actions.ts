@@ -24,6 +24,11 @@ export async function getSuggestedActivitiesAction(
     if (error instanceof z.ZodError) {
       return { success: false, error: `Invalid input: ${error.errors.map(e => e.message).join(', ')}` };
     }
-    return { success: false, error: "Failed to get activity suggestions. Please try again." };
+    // Pass through the error message from the flow if it's an Error instance
+    if (error instanceof Error) {
+        return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get activity suggestions due to an unexpected issue. Please try again." };
   }
 }
+
