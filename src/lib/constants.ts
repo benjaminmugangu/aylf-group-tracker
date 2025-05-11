@@ -51,7 +51,7 @@ export const NAVIGATION_LINKS: NavItem[] = [
     href: "/dashboard/suggestions",
     label: "AI Suggestions",
     icon: Lightbulb,
-    allowedRoles: [ROLES.NATIONAL_COORDINATOR], 
+    allowedRoles: [ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER], 
   },
   {
     href: "/dashboard/sites",
@@ -106,3 +106,4 @@ export const NAVIGATION_LINKS: NavItem[] = [
 ];
 
 export const APP_NAME = "AYLF Small Group Tracker";
+

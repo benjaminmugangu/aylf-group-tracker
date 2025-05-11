@@ -1,7 +1,7 @@
 // src/app/dashboard/suggestions/components/SuggestionsForm.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lightbulb } from "lucide-react";
-import { historicalDataExample, currentTrendsExample, groupPreferencesExample } from "@/lib/mockData"; // Import example data
+import { historicalDataExample, currentTrendsExample, groupPreferencesExample as baseGroupPreferencesExample } from "@/lib/mockData"; 
+import type { Role } from "@/lib/types";
+import { ROLES } from "@/lib/constants";
 
 const suggestionsFormSchema = z.object({
   historicalData: z.string().min(50, "Please provide more detailed historical data (min 50 characters)."),
@@ -23,17 +25,57 @@ export type SuggestionsFormData = z.infer<typeof suggestionsFormSchema>;
 interface SuggestionsFormProps {
   onSubmit: (data: SuggestionsFormData) => Promise<void>;
   isLoading: boolean;
+  currentUserRole?: Role;
+  entityName?: string;
 }
 
-export function SuggestionsForm({ onSubmit, isLoading }: SuggestionsFormProps) {
-  const { control, handleSubmit, formState: { errors }, reset } = useForm<SuggestionsFormData>({
+export function SuggestionsForm({ onSubmit, isLoading, currentUserRole, entityName }: SuggestionsFormProps) {
+  
+  const generateContextualGroupPreferences = () => {
+    let contextualNote = "";
+    if (currentUserRole === ROLES.SITE_COORDINATOR && entityName) {
+      contextualNote = `\n\nThis request is specifically for the ${entityName} site. Please tailor suggestions considering its members, common activities, and local context.`;
+    } else if (currentUserRole === ROLES.SMALL_GROUP_LEADER && entityName) {
+      contextualNote = `\n\nThis request is for the ${entityName} small group. Focus on activities suitable for this specific group, its size, and typical interests.`;
+    }
+    return `${baseGroupPreferencesExample}${contextualNote}`;
+  };
+  
+  const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm<SuggestionsFormData>({
     resolver: zodResolver(suggestionsFormSchema),
-    defaultValues: {
+    defaultValues: { // Set initial default values
       historicalData: historicalDataExample,
       currentTrends: currentTrendsExample,
-      groupPreferences: groupPreferencesExample,
+      groupPreferences: generateContextualGroupPreferences(),
     }
   });
+
+  // Update defaultValues if currentUserRole or entityName changes after initial render
+  useEffect(() => {
+    setValue("groupPreferences", generateContextualGroupPreferences());
+  }, [currentUserRole, entityName, setValue]);
+
+
+  const getGroupPreferencesLabel = () => {
+    if (currentUserRole === ROLES.SITE_COORDINATOR && entityName) {
+      return `Specific Preferences for ${entityName} (Optional)`;
+    }
+    if (currentUserRole === ROLES.SMALL_GROUP_LEADER && entityName) {
+      return `Specific Preferences for ${entityName} (Optional)`;
+    }
+    return "Specific Group Preferences (Optional)";
+  };
+  
+  const getGroupPreferencesPlaceholder = () => {
+     if (currentUserRole === ROLES.SITE_COORDINATOR && entityName) {
+      return `E.g., Age range of members in ${entityName}, particular interests, budget specific to this site...`;
+    }
+    if (currentUserRole === ROLES.SMALL_GROUP_LEADER && entityName) {
+      return `E.g., Typical size of ${entityName}, core interests of members, specific goals for this group...`;
+    }
+    return "Any specific age ranges, interests, location constraints, budget limitations for groups you manage?";
+  }
+
 
   return (
     <Card className="shadow-xl w-full">
@@ -88,7 +130,7 @@ export function SuggestionsForm({ onSubmit, isLoading }: SuggestionsFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="groupPreferences" className="font-semibold">Specific Group Preferences (Optional)</Label>
+            <Label htmlFor="groupPreferences" className="font-semibold">{getGroupPreferencesLabel()}</Label>
             <Controller
               name="groupPreferences"
               control={control}
@@ -96,7 +138,7 @@ export function SuggestionsForm({ onSubmit, isLoading }: SuggestionsFormProps) {
                 <Textarea
                   id="groupPreferences"
                   {...field}
-                  placeholder="Any specific age ranges, interests, location constraints, budget limitations?"
+                  placeholder={getGroupPreferencesPlaceholder()}
                   rows={5}
                   className="mt-1 text-sm"
                 />
@@ -126,3 +168,4 @@ export function SuggestionsForm({ onSubmit, isLoading }: SuggestionsFormProps) {
     </Card>
   );
 }
+

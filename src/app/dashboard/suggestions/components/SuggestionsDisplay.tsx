@@ -4,13 +4,17 @@
 import type { SuggestActivitiesOutput } from "@/ai/flows/suggest-activities";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, AlertTriangle, Info } from "lucide-react";
+import type { Role } from "@/lib/types";
+import { ROLES } from "@/lib/constants";
 
 interface SuggestionsDisplayProps {
   suggestions?: SuggestActivitiesOutput;
   error?: string;
+  entityName?: string;
+  currentUserRole?: Role;
 }
 
-export function SuggestionsDisplay({ suggestions, error }: SuggestionsDisplayProps) {
+export function SuggestionsDisplay({ suggestions, error, entityName, currentUserRole }: SuggestionsDisplayProps) {
   if (error) {
     return (
       <Card className="mt-8 border-destructive bg-destructive/10 shadow-lg">
@@ -29,6 +33,13 @@ export function SuggestionsDisplay({ suggestions, error }: SuggestionsDisplayPro
   }
 
   if (!suggestions) {
+    let initialMessage = "Fill out the form above with details about your groups and past activities. Our AI will then generate tailored suggestions to inspire your next event!";
+    if (currentUserRole === ROLES.SITE_COORDINATOR && entityName) {
+        initialMessage = `Fill out the form above with details about ${entityName}, its members, and past activities. Our AI will then generate tailored suggestions to inspire your next event for ${entityName}!`;
+    } else if (currentUserRole === ROLES.SMALL_GROUP_LEADER && entityName) {
+        initialMessage = `Fill out the form above with details specific to ${entityName}, its members, and past activities. Our AI will then generate tailored suggestions to inspire your next event for ${entityName}!`;
+    }
+
     return (
        <Card className="mt-8 border-dashed border-primary/50 bg-primary/5 shadow-lg">
         <CardHeader>
@@ -39,8 +50,7 @@ export function SuggestionsDisplay({ suggestions, error }: SuggestionsDisplayPro
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Fill out the form above with details about your group and past activities.
-            Our AI will then generate tailored suggestions to inspire your next event!
+            {initialMessage}
           </p>
         </CardContent>
       </Card>
@@ -54,7 +64,7 @@ export function SuggestionsDisplay({ suggestions, error }: SuggestionsDisplayPro
           <CheckCircle className="mr-3 h-8 w-8" />
           AI Generated Activity Suggestions
         </CardTitle>
-        <CardDescription>Based on your input, here are some ideas for upcoming activities:</CardDescription>
+        <CardDescription>Based on your input, here are some ideas for upcoming activities{entityName ? ` for ${entityName}` : ''}:</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
@@ -83,3 +93,4 @@ export function SuggestionsDisplay({ suggestions, error }: SuggestionsDisplayPro
     </Card>
   );
 }
+
