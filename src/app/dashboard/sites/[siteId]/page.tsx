@@ -92,10 +92,10 @@ export default function SiteDetailPage() {
     );
   }
   
-  // site.coordinatorId now stores the name directly
   const siteCoordinatorName = site.coordinatorId; 
   const canManageSite = currentUser?.role === ROLES.NATIONAL_COORDINATOR;
-  const canManageSmallGroups = currentUser?.role === ROLES.NATIONAL_COORDINATOR || (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser?.siteId === site.id);
+  // Site coordinators can no longer manage (add/edit/delete) small groups. Only National Coordinators.
+  const canManageSmallGroups = currentUser?.role === ROLES.NATIONAL_COORDINATOR;
 
 
   return (
@@ -175,9 +175,9 @@ export default function SiteDetailPage() {
             <CardTitle>Small Groups in {site.name}</CardTitle>
             <CardDescription>List of small groups operating under this site.</CardDescription>
           </div>
-          {canManageSmallGroups && (
+          {canManageSmallGroups && ( // Only National Coordinator can add new Small Groups
             // TODO: Link to /dashboard/sites/[siteId]/small-groups/new when form is created
-            <Button variant="outline" disabled>
+            <Button variant="outline" disabled> 
               <PlusCircle className="mr-2 h-4 w-4"/> Add Small Group
             </Button>
           )}
@@ -213,7 +213,7 @@ export default function SiteDetailPage() {
                         <Button variant="ghost" size="icon" title="View Small Group Details (Future)" disabled>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {canManageSmallGroups && (
+                        {canManageSmallGroups && ( // Only National Coordinator can edit/delete
                           <>
                             <Link href={`/dashboard/sites/${siteId}/small-groups/${sg.id}/edit`} passHref>
                               <Button variant="ghost" size="icon" title="Edit Small Group">

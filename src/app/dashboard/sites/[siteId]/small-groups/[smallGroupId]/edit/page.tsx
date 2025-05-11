@@ -4,12 +4,12 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SmallGroupForm, type SmallGroupFormData } from "../../../../components/SmallGroupForm"; // Corrected path
+import { SmallGroupForm, type SmallGroupFormData } from "../../../../components/SmallGroupForm";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { mockSites, mockSmallGroups, mockUsers } from "@/lib/mockData";
 import type { SmallGroup as SmallGroupType, User } from "@/lib/types";
-import { Edit, Info, Users } from "lucide-react";
+import { Edit, Info, Users as UsersIcon } from "lucide-react"; // Changed import name for Users to avoid conflict
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,14 +41,11 @@ export default function EditSmallGroupPage() {
         const oldLeaderIndex = mockUsers.findIndex(u => u.id === oldLeaderId);
         if (oldLeaderIndex !== -1 && mockUsers[oldLeaderIndex].smallGroupId === smallGroupId) {
           mockUsers[oldLeaderIndex].smallGroupId = undefined;
-          // We don't remove siteId here, as they might be site coordinator or member of another SG in the same site.
-          // Role is also not automatically changed from SG Leader.
         }
       }
       if (newLeaderId) {
         const newLeaderIndex = mockUsers.findIndex(u => u.id === newLeaderId);
         if (newLeaderIndex !== -1) {
-          // Remove from old SG if assigned
           if(mockUsers[newLeaderIndex].smallGroupId) {
               const prevSgIndex = mockSmallGroups.findIndex(sg => sg.id === mockUsers[newLeaderIndex].smallGroupId);
               if(prevSgIndex !== -1 && mockSmallGroups[prevSgIndex].leaderId === newLeaderId) {
@@ -56,8 +53,7 @@ export default function EditSmallGroupPage() {
               }
           }
           mockUsers[newLeaderIndex].smallGroupId = smallGroupId;
-          mockUsers[newLeaderIndex].siteId = siteId; // Ensure siteId is also set/correct
-           // If user is not already NC or Site Coord, set role to SG Leader
+          mockUsers[newLeaderIndex].siteId = siteId; 
           if (mockUsers[newLeaderIndex].role !== ROLES.NATIONAL_COORDINATOR && mockUsers[newLeaderIndex].role !== ROLES.SITE_COORDINATOR) {
             mockUsers[newLeaderIndex].role = ROLES.SMALL_GROUP_LEADER;
           }
@@ -65,15 +61,13 @@ export default function EditSmallGroupPage() {
       }
     }
     
-    // Update small group in mockSmallGroups
     const sgIndex = mockSmallGroups.findIndex(sg => sg.id === smallGroupId);
     if (sgIndex !== -1) {
-      mockSmallGroups[sgIndex] = { ...mockSmallGroups[sgIndex], ...data, siteId: siteId }; // Ensure siteId is part of data
+      mockSmallGroups[sgIndex] = { ...mockSmallGroups[sgIndex], ...data, siteId: siteId }; 
     }
 
     console.log("Small Group Updated (mock):", mockSmallGroups[sgIndex]);
     console.log("Users Updated (mock):", mockUsers.filter(u => u.id === oldLeaderId || u.id === newLeaderId));
-
 
     toast({
       title: "Small Group Updated!",
@@ -84,7 +78,8 @@ export default function EditSmallGroupPage() {
 
   if (!site || !smallGroupToEdit) {
     return (
-      <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
+      // Allow NC to access this page even if site/sg is not found, as they might be fixing an issue.
+      <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
         <PageHeader title="Small Group Not Found" icon={Info} />
         <Card>
           <CardContent className="pt-6">
@@ -98,30 +93,27 @@ export default function EditSmallGroupPage() {
     );
   }
   
-  // Check if current user can edit this small group
-  // National Coordinator can edit any. Site Coordinator can edit SGs in their own site.
-  const canEdit = currentUser?.role === ROLES.NATIONAL_COORDINATOR || 
-                  (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser?.siteId === siteId);
+  // Only National Coordinator can edit small groups.
+  const canEdit = currentUser?.role === ROLES.NATIONAL_COORDINATOR;
 
-
-  if (!canEdit) {
+  if (!canEdit) { // This guard is effectively redundant if RoleBasedGuard below is set to NC only, but good for clarity.
      return (
-      <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
+      <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
         <PageHeader title="Access Denied" description="You do not have permission to edit this small group." icon={Info} />
          <Button onClick={() => router.push(`/dashboard/sites/${siteId}`)} className="mt-4">
             Back to {site.name}
           </Button>
       </RoleBasedGuard>
-     )
+     );
   }
 
-
   return (
-    <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR]}>
+    // Restrict page access to National Coordinators only.
+    <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR]}>
       <PageHeader 
         title={`Edit Small Group: ${smallGroupToEdit.name}`}
         description={`Modifying details for "${smallGroupToEdit.name}" within ${site.name}.`}
-        icon={Users}
+        icon={UsersIcon} // Using renamed import
       />
       <SmallGroupForm 
         smallGroup={smallGroupToEdit} 
