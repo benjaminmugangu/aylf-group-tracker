@@ -144,7 +144,14 @@ export default function DashboardLayout({
       <Sidebar variant="sidebar" collapsible="icon">
         <SidebarHeader className="p-4">
           <Link href="/dashboard" className="flex items-center gap-2 group/logo">
-             <Image src="https://picsum.photos/seed/aylflogo/40/40" alt="AYLF Logo" width={32} height={32} className="rounded-md transition-transform duration-300 group-hover/logo:scale-110" data-ai-hint="logo organization"/>
+             <Image 
+                src="https://picsum.photos/seed/aylflogo/40/40" 
+                alt="AYLF Logo" 
+                width={32} 
+                height={32} 
+                className="rounded-md transition-transform duration-300 group-hover/logo:scale-110"
+                data-ai-hint="logo organization"
+              />
             <span className="font-semibold text-lg text-sidebar-primary group-data-[collapsible=icon]:hidden">
               {APP_NAME}
             </span>

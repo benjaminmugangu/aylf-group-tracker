@@ -133,7 +133,14 @@ export default function LoginPage() {
         <Card className="w-full max-w-md shadow-2xl">
           <CardHeader className="items-center text-center">
             <div className="p-2 mb-4">
-              <Image src="https://picsum.photos/seed/aylflogo/100/100" alt="AYLF Logo" width={80} height={80} className="rounded-full mx-auto" data-ai-hint="logo organization" />
+              <Image 
+                src="https://picsum.photos/seed/aylflogo/100/100" 
+                alt="AYLF Logo" 
+                width={80} 
+                height={80} 
+                className="rounded-full mx-auto" 
+                data-ai-hint="logo organization"
+              />
             </div>
             <CardTitle className="text-3xl font-bold">Welcome to {APP_NAME}</CardTitle>
             <CardDescription className="text-muted-foreground">Loading your experience...</CardDescription>
@@ -156,7 +163,14 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="items-center text-center">
           <div className="p-2 mb-4">
-            <Image src="https://picsum.photos/seed/aylflogo/100/100" alt="AYLF Logo" width={80} height={80} className="rounded-full mx-auto" data-ai-hint="logo organization" />
+            <Image 
+              src="https://picsum.photos/seed/aylflogo/100/100" 
+              alt="AYLF Logo" 
+              width={80} 
+              height={80} 
+              className="rounded-full mx-auto" 
+              data-ai-hint="logo organization" 
+            />
           </div>
           <CardTitle className="text-3xl font-bold">Welcome to {APP_NAME}</CardTitle>
           <CardDescription className="text-muted-foreground">Please select your role and assignment to continue</CardDescription>

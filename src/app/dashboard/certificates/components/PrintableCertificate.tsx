@@ -45,11 +45,11 @@ export function PrintableCertificate({ user, entityName, appName }: PrintableCer
 
         <div className="flex justify-center mb-6">
           <Image 
-            src="https://picsum.photos/seed/aylflogo/120/120" // Placeholder logo
+            src="https://picsum.photos/seed/aylflogo/120/120" 
             alt={`${appName} Logo`} 
             width={100} 
             height={100} 
-            className="rounded-full"
+            className="rounded-full logo"
             data-ai-hint="organization logo"
           />
         </div>
@@ -85,7 +85,7 @@ export function PrintableCertificate({ user, entityName, appName }: PrintableCer
             <p className="signature-title text-sm text-muted-foreground">Date Issued: {format(new Date(), "MMMM d, yyyy")}</p>
           </div>
         </div>
-         <p className="text-xs text-muted-foreground mt-10">This certificate acknowledges the valuable role and commitment demonstrated by the recipient in furthering the mission of {appName}.</p>
+         <p className="footer-text text-xs text-muted-foreground mt-10">This certificate acknowledges the valuable role and commitment demonstrated by the recipient in furthering the mission of {appName}.</p>
       </div>
     </div>
   );
