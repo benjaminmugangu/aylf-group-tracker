@@ -14,35 +14,35 @@ body {
     --card-foreground: 240 5.9% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 5.9% 10%;
-    --primary: 180 100% 25%; /* Teal - #008080 */
+    --primary: 100 60% 29%; /* AYLF Green (#38761D) */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 240 4.8% 90%; /* Tailwind gray-200 like */
     --secondary-foreground: 240 5.9% 20%; /* Darker gray for text on secondary */
     --muted: 240 4.8% 85%; /* Tailwind gray-300 like */
     --muted-foreground: 240 3.8% 46.1%; /* Tailwind gray-500 like */
-    --accent: 180 100% 25%; /* Teal */
+    --accent: 180 100% 25%; /* Teal (#008080) - AYLF Accent */
     --accent-foreground: 0 0% 100%; /* White */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 89.8%; /* Tailwind gray-300 like for borders */
     --input: 240 5.9% 93%; /* Tailwind gray-200 like for input backgrounds */
-    --ring: 180 100% 30%; /* Teal for focus rings */
-    --chart-1: 180 100% 25%; /* Teal */
-    --chart-2: 210 100% 45%; /* A complementary blue */
-    --chart-3: 40 90% 55%; /* A warm yellow/orange */
-    --chart-4: 120 60% 45%; /* Green */
+    --ring: 100 60% 35%; /* AYLF Green (slightly lighter for ring) */
+    --chart-1: 100 60% 29%; /* AYLF Green */
+    --chart-2: 180 100% 25%; /* Teal - AYLF Accent */
+    --chart-3: 45 86% 57%; /* AYLF Gold (#F1C232) */
+    --chart-4: 210 100% 45%; /* A complementary blue */
     --chart-5: 0 70% 60%; /* Red */
     --radius: 0.5rem;
 
     /* Sidebar specific vars */
     --sidebar-background: 240 5.2% 92%; /* Slightly darker than main bg (gray-150 like) */
     --sidebar-foreground: 240 5.9% 20%; /* Dark gray (gray-800 like) */
-    --sidebar-primary: 180 100% 25%; /* Teal */
+    --sidebar-primary: 100 60% 29%; /* AYLF Green */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 180 90% 40%; /* Slightly lighter/brighter Teal */
+    --sidebar-accent: 180 100% 25%; /* Teal - AYLF Accent */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
     --sidebar-border: 240 5.9% 85.8%; /* gray-300 like */
-    --sidebar-ring: 180 100% 30%; /* Teal */
+    --sidebar-ring: 100 60% 35%; /* AYLF Green (ring) */
   }
 
   .dark {
@@ -52,34 +52,34 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 240 5.9% 12%; /* Tailwind gray-900/950 like */
     --popover-foreground: 0 0% 98%;
-    --primary: 180 100% 35%; /* Brighter Teal for dark mode */
+    --primary: 100 50% 40%; /* Brighter AYLF Green */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 240 3.7% 25%; /* Tailwind gray-700/800 like */
     --secondary-foreground: 0 0% 95%; /* Lighter gray for text on dark secondary */
     --muted: 240 3.7% 20%; /* Tailwind gray-800 like */
     --muted-foreground: 240 5% 64.9%; /* Tailwind gray-400 like */
-    --accent: 180 100% 35%; /* Brighter Teal */
+    --accent: 180 80% 40%; /* Brighter Teal */
     --accent-foreground: 0 0% 100%; /* White */
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 20%; /* Tailwind gray-800 like for borders */
     --input: 240 3.7% 22%; /* Tailwind gray-700/800 like for input backgrounds */
-    --ring: 180 100% 40%; /* Brighter Teal for rings */
-    --chart-1: 180 100% 35%; /* Brighter Teal */
-    --chart-2: 210 100% 55%; /* Brighter complementary blue */
-    --chart-3: 40 90% 65%; /* Brighter warm yellow/orange */
-    --chart-4: 120 60% 55%; /* Brighter Green */
+    --ring: 100 50% 45%; /* Brighter AYLF Green (ring) */
+    --chart-1: 100 50% 40%; /* Brighter AYLF Green */
+    --chart-2: 180 80% 40%; /* Brighter Teal */
+    --chart-3: 45 80% 60%; /* Brighter AYLF Gold */
+    --chart-4: 210 100% 55%; /* Brighter complementary blue */
     --chart-5: 0 70% 70%; /* Brighter Red */
 
     /* Sidebar specific vars */
     --sidebar-background: 240 5.9% 12%; /* Darker than card (gray-900 like) */
     --sidebar-foreground: 0 0% 95%; /* Light gray (gray-100 like) */
-    --sidebar-primary: 180 100% 35%; /* Brighter Teal */
+    --sidebar-primary: 100 50% 40%; /* Brighter AYLF Green */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 180 90% 45%; /* Even Brighter Teal */
+    --sidebar-accent: 180 80% 40%; /* Brighter Teal */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
     --sidebar-border: 240 3.7% 25%; /* gray-700/800 like */
-    --sidebar-ring: 180 100% 40%; /* Brighter Teal */
+    --sidebar-ring: 100 50% 45%; /* Brighter AYLF Green (ring) */
   }
 }
 
