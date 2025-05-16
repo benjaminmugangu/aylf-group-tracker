@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -192,7 +193,7 @@ const ChartTooltipContent = React.forwardRef<
 
             return (
               <div
-                key={item.dataKey}
+                key={item.dataKey || item.name || `tooltip-item-${index}`} // Use a more reliable key
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
@@ -285,13 +286,17 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload.map((item) => {
-          const key = `${nameKey || item.dataKey || "value"}`
-          const itemConfig = getPayloadConfigFromPayload(config, item, key)
+        {payload.map((item, index) => {
+          const configKeyLookup = `${nameKey || item.dataKey || item.value || "value"}`
+          const itemConfig = getPayloadConfigFromPayload(config, item, configKeyLookup)
+          
+          // Attempt to generate a more robust key
+          // Use item.id if available (from Recharts payload), then item.value (label), then item.color, finally index.
+          const legendItemKey = item.id || (typeof item.value === 'string' || typeof item.value === 'number' ? item.value.toString() : '') || item.color || `legend-item-${index}`;
 
           return (
             <div
-              key={item.value}
+              key={legendItemKey}
               className={cn(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               )}
@@ -306,7 +311,7 @@ const ChartLegendContent = React.forwardRef<
                   }}
                 />
               )}
-              {itemConfig?.label}
+              {itemConfig?.label || item.value}
             </div>
           )
         })}
@@ -348,6 +353,13 @@ function getPayloadConfigFromPayload(
     configLabelKey = payloadPayload[
       key as keyof typeof payloadPayload
     ] as string
+  }
+  
+  // Ensure we look up by the actual legend item label if that's how config is structured
+  // Recharts payload 'value' field usually holds the legend item label
+  const legendItemLabel = (payload as any).value;
+  if (typeof legendItemLabel === 'string' && config[legendItemLabel]) {
+    return config[legendItemLabel];
   }
 
   return configLabelKey in config
