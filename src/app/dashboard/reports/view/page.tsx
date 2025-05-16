@@ -118,8 +118,7 @@ export default function ViewReportsPage() {
   const confirmRejectReport = () => {
     if (isRejectingReport) {
       handleReportStatusUpdate(isRejectingReport.id, "rejected", rejectionNotes);
-      setIsRejectingReport(null);
-      setRejectionNotes("");
+      // No need to set isRejectingReport to null here, onOpenChange of AlertDialog will handle it.
     }
   };
 
@@ -351,15 +350,43 @@ export default function ViewReportsPage() {
                   >
                     <ThumbsUp className="mr-2 h-4 w-4"/> Approve
                   </Button>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => setIsRejectingReport(selectedReport)}
-                    >
-                      <ThumbsDown className="mr-2 h-4 w-4"/> Reject
-                    </Button>
-                  </AlertDialogTrigger>
+                  
+                  <AlertDialog onOpenChange={(open) => {
+                      if (!open) {
+                          setIsRejectingReport(null); 
+                          setRejectionNotes("");      
+                      }
+                  }}>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => setIsRejectingReport(selectedReport)} 
+                      >
+                        <ThumbsDown className="mr-2 h-4 w-4"/> Reject
+                      </Button>
+                    </AlertDialogTrigger>
+                    {isRejectingReport && selectedReport.id === isRejectingReport.id && ( // Ensure content is for the correct report
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Reject Report: "{isRejectingReport.title}"</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Please provide a reason for rejecting this report. These notes will be visible to the submitter.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <Textarea 
+                          placeholder="Enter rejection notes here..."
+                          value={rejectionNotes}
+                          onChange={(e) => setRejectionNotes(e.target.value)}
+                          rows={4}
+                        />
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel> {/* onOpenChange on AlertDialog handles cleanup */}
+                          <AlertDialogAction onClick={confirmRejectReport} disabled={!rejectionNotes.trim()}>Confirm Rejection</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    )}
+                  </AlertDialog>
                 </div>
               )}
               <Button variant="outline" onClick={() => {setIsModalOpen(false); window.location.hash = '';}}>Close</Button>
@@ -367,31 +394,6 @@ export default function ViewReportsPage() {
           </DialogContent>
         </Dialog>
       )}
-
-      {isRejectingReport && (
-         <AlertDialog open={!!isRejectingReport} onOpenChange={(isOpen) => { if(!isOpen) setIsRejectingReport(null); }}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Reject Report: "{isRejectingReport.title}"</AlertDialogTitle>
-              <AlertDialogDescription>
-                Please provide a reason for rejecting this report. These notes will be visible to the submitter.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <Textarea 
-              placeholder="Enter rejection notes here..."
-              value={rejectionNotes}
-              onChange={(e) => setRejectionNotes(e.target.value)}
-              rows={4}
-            />
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => { setIsRejectingReport(null); setRejectionNotes(""); }}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmRejectReport} disabled={!rejectionNotes.trim()}>Confirm Rejection</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-
     </RoleBasedGuard>
   );
 }
-
