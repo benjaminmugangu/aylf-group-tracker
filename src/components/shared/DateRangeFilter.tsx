@@ -1,3 +1,4 @@
+
 // src/components/shared/DateRangeFilter.tsx
 "use client";
 
@@ -17,6 +18,7 @@ import {
   endOfYear, 
   subDays, 
   subMonths,
+  subWeeks, // Added for Last Week
   startOfDay,
   endOfDay
 } from 'date-fns';
@@ -26,6 +28,7 @@ export type PredefinedRange =
   | 'all_time' 
   | 'today' 
   | 'this_week' 
+  | 'last_week' // Added
   | 'this_month' 
   | 'this_year' 
   | 'last_7_days' 
@@ -50,6 +53,7 @@ const PREDEFINED_RANGES_OPTIONS: { value: PredefinedRange; label: string }[] = [
   { value: 'all_time', label: 'All Time' },
   { value: 'today', label: 'Today' },
   { value: 'this_week', label: 'This Week' },
+  { value: 'last_week', label: 'Last Week' }, // Added
   { value: 'this_month', label: 'This Month' },
   { value: 'this_year', label: 'This Year' },
   { value: 'last_7_days', label: 'Last 7 Days' },
@@ -170,6 +174,10 @@ export function getDateRangeFromFilterValue(filterValue: DateFilterValue): { sta
         startDate = startOfWeek(now, { weekStartsOn: 1 }); 
         endDate = endOfWeek(now, { weekStartsOn: 1 });
         break;
+      case 'last_week': // Added
+        startDate = startOfDay(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }));
+        endDate = endOfDay(endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }));
+        break;
       case 'this_month':
         startDate = startOfMonth(now);
         endDate = endOfMonth(now);
@@ -233,3 +241,4 @@ export function applyDateFilter<T extends { date?: string; submissionDate?: stri
     }
   });
 }
+
