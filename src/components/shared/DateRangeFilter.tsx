@@ -23,7 +23,9 @@ import {
   endOfDay,
   isValid,
   getYear,
-  getMonth
+  getMonth,
+  setYear,
+  setMonth
 } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
@@ -34,8 +36,7 @@ export type PredefinedRange =
   | 'last_week'
   | 'this_month' 
   | 'this_year'
-  | 'specific_year' // New: User selects a specific year
-  | 'specific_month' // New: User selects a specific year and month
+  | 'specific_period' // For Year/Month selection
   | 'last_7_days' 
   | 'last_30_days' 
   | 'last_90_days'
@@ -45,8 +46,8 @@ export type PredefinedRange =
 export interface DateFilterValue {
   rangeKey: PredefinedRange;
   customRange?: DateRange;
-  specificYear?: string; // New for specific year selection
-  specificMonth?: string; // New for specific month selection (0-11)
+  specificYear?: string; 
+  specificMonth?: string; // "0"-"11", or "all" if filtering by entire year
   display: string;
 }
 
@@ -55,7 +56,7 @@ interface DateRangeFilterProps {
   initialRangeKey?: PredefinedRange;
   initialCustomRange?: DateRange;
   initialSpecificYear?: string;
-  initialSpecificMonth?: string;
+  initialSpecificMonth?: string; // "0"-"11" or "all"
 }
 
 const PREDEFINED_RANGES_OPTIONS: { value: PredefinedRange; label: string }[] = [
@@ -65,23 +66,27 @@ const PREDEFINED_RANGES_OPTIONS: { value: PredefinedRange; label: string }[] = [
   { value: 'last_week', label: 'Last Week (Mon-Sun)' },
   { value: 'this_month', label: 'This Month (Current)' },
   { value: 'this_year', label: 'This Year (Current)' },
-  { value: 'specific_year', label: 'Specific Year' },
-  { value: 'specific_month', label: 'Specific Month' },
+  { value: 'specific_period', label: 'Specific Period' },
   { value: 'last_7_days', label: 'Last 7 Days' },
   { value: 'last_30_days', label: 'Last 30 Days' },
   { value: 'last_90_days', label: 'Last 90 Days' },
   { value: 'last_12_months', label: 'Last 12 Months' },
 ];
 
+const ALL_MONTHS_VALUE = "all";
+
 const YEAR_OPTIONS = Array.from({ length: (2028 - 2000) + 1 }, (_, i) => {
   const year = (2000 + i).toString();
   return { value: year, label: year };
 });
 
-const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
-  value: i.toString(), // 0 for January, 11 for December
-  label: format(new Date(0, i), "MMMM"),
-}));
+const MONTH_OPTIONS: { value: string; label: string }[] = [
+  { value: ALL_MONTHS_VALUE, label: "All Months" },
+  ...Array.from({ length: 12 }, (_, i) => ({
+    value: i.toString(), 
+    label: format(new Date(0, i), "MMMM"),
+  }))
+];
 
 
 export function DateRangeFilter({ 
@@ -93,15 +98,17 @@ export function DateRangeFilter({
 }: DateRangeFilterProps) {
   const [selectedRangeKey, setSelectedRangeKey] = useState<PredefinedRange>(initialRangeKey);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(initialCustomRange);
-  const [specificYear, setSpecificYear] = useState<string | undefined>(initialSpecificYear || getYear(new Date()).toString());
-  const [specificMonth, setSpecificMonth] = useState<string | undefined>(initialSpecificMonth || getMonth(new Date()).toString());
+  
+  const [currentSpecificYear, setCurrentSpecificYear] = useState<string | undefined>(initialSpecificYear || getYear(new Date()).toString());
+  const [currentSpecificMonth, setCurrentSpecificMonth] = useState<string | undefined>(initialSpecificMonth || ALL_MONTHS_VALUE);
+
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const getDisplayLabel = (
     rangeKey: PredefinedRange, 
     currentCustomRange?: DateRange,
-    currentSpecificYear?: string,
-    currentSpecificMonth?: string
+    year?: string,
+    month?: string // "0"-"11" or "all"
   ): string => {
     if (rangeKey === 'custom' && currentCustomRange?.from) {
       if (currentCustomRange.to) {
@@ -109,56 +116,52 @@ export function DateRangeFilter({
       }
       return format(currentCustomRange.from, "LLL dd, y");
     }
-    if (rangeKey === 'specific_year' && currentSpecificYear) {
-      return `Year: ${currentSpecificYear}`;
-    }
-    if (rangeKey === 'specific_month' && currentSpecificYear && currentSpecificMonth) {
-      const monthLabel = MONTH_OPTIONS.find(m => m.value === currentSpecificMonth)?.label || "";
-      return `Month: ${monthLabel} ${currentSpecificYear}`;
+    if (rangeKey === 'specific_period' && year) {
+      if (month && month !== ALL_MONTHS_VALUE) {
+        const monthLabel = MONTH_OPTIONS.find(m => m.value === month)?.label || "";
+        return `Period: ${monthLabel} ${year}`;
+      }
+      return `Period: Year ${year}`;
     }
     return PREDEFINED_RANGES_OPTIONS.find(r => r.value === rangeKey)?.label || "Select Range";
   };
   
-  const [displayLabel, setDisplayLabel] = useState<string>(() => getDisplayLabel(initialRangeKey, initialCustomRange, initialSpecificYear, initialSpecificMonth));
+  const [displayLabel, setDisplayLabel] = useState<string>(() => getDisplayLabel(initialRangeKey, initialCustomRange, currentSpecificYear, currentSpecificMonth));
 
   useEffect(() => {
-    setDisplayLabel(getDisplayLabel(selectedRangeKey, customDateRange, specificYear, specificMonth));
-  }, [selectedRangeKey, customDateRange, specificYear, specificMonth]);
+    setDisplayLabel(getDisplayLabel(selectedRangeKey, customDateRange, currentSpecificYear, currentSpecificMonth));
+  }, [selectedRangeKey, customDateRange, currentSpecificYear, currentSpecificMonth]);
+
 
   const triggerFilterChange = (
     key: PredefinedRange,
     custom?: DateRange,
-    year?: string,
-    month?: string
+    yearVal?: string,
+    monthVal?: string // "0"-"11" or "all"
   ) => {
-    const newDisplayLabel = getDisplayLabel(key, custom, year, month);
+    const newDisplayLabel = getDisplayLabel(key, custom, yearVal, monthVal);
     setDisplayLabel(newDisplayLabel);
     onFilterChange({ 
       rangeKey: key, 
       customRange: custom,
-      specificYear: year,
-      specificMonth: month,
+      specificYear: yearVal,
+      specificMonth: monthVal,
       display: newDisplayLabel 
     });
   };
   
-  const handlePredefinedRangeChange = (value: PredefinedRange) => {
+  const handleMainRangeChange = (value: PredefinedRange) => {
     setSelectedRangeKey(value);
     setCustomDateRange(undefined); // Clear custom range
-    // If switching to specific year/month, keep current year/month or default
-    if (value === 'specific_year') {
-      const yearToUse = specificYear || getYear(new Date()).toString();
-      setSpecificYear(yearToUse);
-      triggerFilterChange(value, undefined, yearToUse, undefined);
-    } else if (value === 'specific_month') {
-      const yearToUse = specificYear || getYear(new Date()).toString();
-      const monthToUse = specificMonth || getMonth(new Date()).toString();
-      setSpecificYear(yearToUse);
-      setSpecificMonth(monthToUse);
+
+    if (value === 'specific_period') {
+      const yearToUse = currentSpecificYear || getYear(new Date()).toString();
+      const monthToUse = currentSpecificMonth || ALL_MONTHS_VALUE;
+      if (!currentSpecificYear) setCurrentSpecificYear(yearToUse);
+      if (!currentSpecificMonth) setCurrentSpecificMonth(monthToUse);
       triggerFilterChange(value, undefined, yearToUse, monthToUse);
     } else {
-      setSpecificYear(undefined); // Clear specific year/month for other predefined ranges
-      setSpecificMonth(undefined);
+      // For other predefined ranges, year/month selectors are not primary drivers
       triggerFilterChange(value, undefined, undefined, undefined);
     }
   };
@@ -167,41 +170,42 @@ export function DateRangeFilter({
     setCustomDateRange(date);
     if (date?.from) {
       setSelectedRangeKey('custom'); 
-      setSpecificYear(undefined); // Clear specific year/month
-      setSpecificMonth(undefined);
+      setCurrentSpecificYear(undefined); 
+      setCurrentSpecificMonth(undefined);
       triggerFilterChange('custom', date, undefined, undefined);
       if (date.to || !date.from) { 
          setPopoverOpen(false);
       }
     } else { 
-        handlePredefinedRangeChange('all_time'); 
+      // If custom date is cleared, revert to a default or previous state
+      handleMainRangeChange('all_time'); 
     }
   };
 
   const handleSpecificYearChange = (year: string) => {
-    setSpecificYear(year);
-    setSelectedRangeKey('specific_year'); // Ensure correct range key
-    setCustomDateRange(undefined); // Clear custom range
-    if (selectedRangeKey === 'specific_month') { // if month was also set, update with new year
-        triggerFilterChange('specific_month', undefined, year, specificMonth);
-    } else {
-        triggerFilterChange('specific_year', undefined, year, undefined);
-    }
+    setCurrentSpecificYear(year);
+    // If month is already set (and not 'all'), keep it, otherwise default to 'all' for the new year
+    const monthToUse = currentSpecificMonth && currentSpecificMonth !== ALL_MONTHS_VALUE ? currentSpecificMonth : ALL_MONTHS_VALUE;
+    setCurrentSpecificMonth(monthToUse);
+    setSelectedRangeKey('specific_period'); 
+    setCustomDateRange(undefined);
+    triggerFilterChange('specific_period', undefined, year, monthToUse);
   };
 
   const handleSpecificMonthChange = (month: string) => {
-    setSpecificMonth(month);
-    setSelectedRangeKey('specific_month'); // Ensure correct range key
-    setCustomDateRange(undefined); // Clear custom range
-    const yearToUse = specificYear || getYear(new Date()).toString(); // Ensure year is set
-    if (!specificYear) setSpecificYear(yearToUse);
-    triggerFilterChange('specific_month', undefined, yearToUse, month);
+    setCurrentSpecificMonth(month);
+    const yearToUse = currentSpecificYear || getYear(new Date()).toString();
+    if(!currentSpecificYear) setCurrentSpecificYear(yearToUse); // Ensure year is set
+    
+    setSelectedRangeKey('specific_period');
+    setCustomDateRange(undefined);
+    triggerFilterChange('specific_period', undefined, yearToUse, month);
   };
   
   return (
     <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
-      <Select value={selectedRangeKey} onValueChange={(value) => handlePredefinedRangeChange(value as PredefinedRange)}>
-        <SelectTrigger className="w-full sm:w-[180px]">
+      <Select value={selectedRangeKey} onValueChange={(value) => handleMainRangeChange(value as PredefinedRange)}>
+        <SelectTrigger className="w-full sm:w-[190px]">
           <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
           <SelectValue placeholder="Filter by date" />
         </SelectTrigger>
@@ -212,37 +216,41 @@ export function DateRangeFilter({
         </SelectContent>
       </Select>
 
-      {(selectedRangeKey === 'specific_year' || selectedRangeKey === 'specific_month') && (
-        <Select value={specificYear} onValueChange={handleSpecificYearChange}>
-          <SelectTrigger className="w-full sm:w-[120px]">
-            <SelectValue placeholder="Year" />
-          </SelectTrigger>
-          <SelectContent>
-            {YEAR_OPTIONS.map(option => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-
-      {selectedRangeKey === 'specific_month' && (
-        <Select value={specificMonth} onValueChange={handleSpecificMonthChange}>
-          <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Month" />
-          </SelectTrigger>
-          <SelectContent>
-            {MONTH_OPTIONS.map(option => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {selectedRangeKey === 'specific_period' && (
+        <>
+          <Select value={currentSpecificYear} onValueChange={handleSpecificYearChange}>
+            <SelectTrigger className="w-full sm:w-[120px]">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {YEAR_OPTIONS.map(option => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {currentSpecificYear && (
+            <Select value={currentSpecificMonth} onValueChange={handleSpecificMonthChange}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTH_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.value === ALL_MONTHS_VALUE ? `All Months for ${currentSpecificYear}` : option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </>
       )}
       
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full sm:w-auto min-w-[240px] justify-start text-left font-normal"
+            className="w-full sm:flex-grow sm:min-w-[240px] justify-start text-left font-normal"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {displayLabel}
@@ -255,9 +263,6 @@ export function DateRangeFilter({
             onSelect={handleCustomDateChange}
             initialFocus
             numberOfMonths={2}
-            disabled={(date) => { // Disable calendar if specific_year or specific_month is chosen
-                return selectedRangeKey === 'specific_year' || selectedRangeKey === 'specific_month';
-            }}
           />
         </PopoverContent>
       </Popover>
@@ -266,7 +271,7 @@ export function DateRangeFilter({
 }
 
 export function getDateRangeFromFilterValue(filterValue: DateFilterValue): { startDate?: Date, endDate?: Date } {
-  if (filterValue.rangeKey === 'all_time' && !filterValue.customRange && !filterValue.specificYear && !filterValue.specificMonth) {
+  if (filterValue.rangeKey === 'all_time' && !filterValue.customRange && !filterValue.specificYear) {
     return {};
   }
 
@@ -276,18 +281,25 @@ export function getDateRangeFromFilterValue(filterValue: DateFilterValue): { sta
   if (filterValue.rangeKey === 'custom' && filterValue.customRange?.from) {
     startDate = startOfDay(filterValue.customRange.from);
     endDate = filterValue.customRange.to ? endOfDay(filterValue.customRange.to) : endOfDay(filterValue.customRange.from);
-  } else if (filterValue.rangeKey === 'specific_year' && filterValue.specificYear) {
+  } else if (filterValue.rangeKey === 'specific_period' && filterValue.specificYear) {
       const yearNum = parseInt(filterValue.specificYear, 10);
       if (!isNaN(yearNum)) {
-        startDate = startOfYear(new Date(yearNum, 0, 1));
-        endDate = endOfYear(new Date(yearNum, 11, 31));
-      }
-  } else if (filterValue.rangeKey === 'specific_month' && filterValue.specificYear && filterValue.specificMonth) {
-      const yearNum = parseInt(filterValue.specificYear, 10);
-      const monthNum = parseInt(filterValue.specificMonth, 10); // 0-11
-      if (!isNaN(yearNum) && !isNaN(monthNum) && monthNum >=0 && monthNum <=11) {
-        startDate = startOfMonth(new Date(yearNum, monthNum, 1));
-        endDate = endOfMonth(new Date(yearNum, monthNum, 1));
+        if (filterValue.specificMonth && filterValue.specificMonth !== ALL_MONTHS_VALUE) {
+            const monthNum = parseInt(filterValue.specificMonth, 10); // "0"-"11"
+            if (!isNaN(monthNum) && monthNum >= 0 && monthNum <= 11) {
+                let dateForMonth = new Date();
+                dateForMonth = setYear(dateForMonth, yearNum);
+                dateForMonth = setMonth(dateForMonth, monthNum);
+                startDate = startOfMonth(dateForMonth);
+                endDate = endOfMonth(dateForMonth);
+            } else { // Invalid month, default to full year or handle error
+                startDate = startOfYear(new Date(yearNum, 0, 1));
+                endDate = endOfYear(new Date(yearNum, 11, 31));
+            }
+        } else { // No specific month or "All Months" selected, filter by entire year
+            startDate = startOfYear(new Date(yearNum, 0, 1));
+            endDate = endOfYear(new Date(yearNum, 11, 31));
+        }
       }
   } else {
     const now = new Date();
@@ -325,20 +337,19 @@ export function getDateRangeFromFilterValue(filterValue: DateFilterValue): { sta
         endDate = endOfDay(now);
         break;
       case 'last_12_months':
-        startDate = startOfDay(startOfMonth(subMonths(now, 11))); // Start of the month, 11 months ago
-        endDate = endOfDay(now); // End of today
+        startDate = startOfDay(startOfMonth(subMonths(now, 11))); 
+        endDate = endOfDay(now); 
         break;
       default: 
         return {}; 
     }
   }
   
-  // Validate dates
   if (startDate && endDate && isValid(startDate) && isValid(endDate)) {
     return { startDate, endDate };
   }
   console.warn("Date calculation resulted in invalid dates for filter:", filterValue);
-  return {}; // Return empty if dates are not valid
+  return {};
 }
 
 
@@ -353,9 +364,9 @@ export function applyDateFilter<T extends { date?: string; submissionDate?: stri
 
   const { startDate, endDate } = getDateRangeFromFilterValue(filterValue);
 
-  if (!startDate || !endDate) { // If date calculation failed or returned empty (e.g. for invalid specificYear/Month)
-     if (filterValue.rangeKey === 'all_time') return items; // only return all items if it was explicitly all_time
-     return []; // otherwise, if a filter was intended but failed, return no items
+  if (!startDate || !endDate) {
+     if (filterValue.rangeKey === 'all_time') return items; 
+     return []; 
   }
   
   return items.filter(item => {
@@ -364,11 +375,10 @@ export function applyDateFilter<T extends { date?: string; submissionDate?: stri
     
     try {
       const itemDate = new Date(itemDateStr);
-      if (!isValid(itemDate)) { // Check if date is valid
+      if (!isValid(itemDate)) {
           console.warn(`Invalid date string found during filtering: ${itemDateStr}`);
           return false;
       }
-      // Ensure comparison is inclusive by comparing itemDate against startOfDay(startDate) and endOfDay(endDate) effectively
       return itemDate >= startDate && itemDate <= endDate;
     } catch (e) {
       console.error(`Error parsing date during filtering: ${itemDateStr}`, e);
