@@ -134,10 +134,10 @@ export default function LoginPage() {
           <CardHeader className="items-center text-center">
             <div className="p-2 mb-4">
               <Image 
-                src="https://picsum.photos/seed/aylflogo/100/100" 
+                src="https://picsum.photos/seed/aylflogo/200/200" 
                 alt="AYLF Logo" 
-                width={80} 
-                height={80} 
+                width={100} // Increased width
+                height={100} // Increased height
                 className="rounded-full mx-auto" 
                 data-ai-hint="logo organization"
               />
@@ -164,10 +164,10 @@ export default function LoginPage() {
         <CardHeader className="items-center text-center">
           <div className="p-2 mb-4">
             <Image 
-              src="https://picsum.photos/seed/aylflogo/100/100" 
+              src="https://picsum.photos/seed/aylflogo/200/200" // Larger placeholder for logo
               alt="AYLF Logo" 
-              width={80} 
-              height={80} 
+              width={100} // Increased width
+              height={100} // Increased height
               className="rounded-full mx-auto" 
               data-ai-hint="logo organization" 
             />
@@ -300,3 +300,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

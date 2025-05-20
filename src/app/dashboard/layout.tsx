@@ -145,10 +145,10 @@ export default function DashboardLayout({
         <SidebarHeader className="p-4">
           <Link href="/dashboard" className="flex items-center gap-2 group/logo">
              <Image 
-                src="https://picsum.photos/seed/aylflogo/40/40" 
+                src="https://picsum.photos/seed/aylflogo/80/80" // Larger placeholder for logo
                 alt="AYLF Logo" 
-                width={32} 
-                height={32} 
+                width={40} // Increased width
+                height={40} // Increased height
                 className="rounded-md transition-transform duration-300 group-hover/logo:scale-110"
                 data-ai-hint="logo organization"
               />
@@ -196,3 +196,4 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+

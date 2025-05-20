@@ -26,7 +26,9 @@ import {
   endOfWeek,
   subDays,
   isValid,
-  parseISO
+  parseISO,
+  startOfDay, 
+  endOfDay 
 } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -44,7 +46,7 @@ const REPORT_PERIOD_OPTIONS: { value: ReportPeriodType; label: string }[] = [
 const generateYearOptions = () => {
   const options = [];
   const maxYear = 2028; 
-  const minYear = 2014; // Updated minYear to 2014
+  const minYear = 2014; 
   for (let year = maxYear; year >= minYear; year--) {
     options.push({ value: year.toString(), label: year.toString() });
   }
@@ -91,12 +93,12 @@ export default function CertificatesPage() {
         endDate = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
         break;
       case "last_7_days":
-        startDate = subDays(now, 6); // Start of 7 days ago
-        endDate = now; // End of today
+        startDate = subDays(now, 6); 
+        endDate = now; 
         break;
       case "last_30_days":
-        startDate = subDays(now, 29); // Start of 30 days ago
-        endDate = now; // End of today
+        startDate = subDays(now, 29); 
+        endDate = now; 
         break;
       case "all_time":
       default:
@@ -174,15 +176,15 @@ export default function CertificatesPage() {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            .print-header img { max-height: 50px; }
+            .print-header img { max-height: 75px; }
             .print-footer { position: fixed; bottom: 10mm; left: 20mm; right: 20mm; text-align: center; font-size: 8pt; color: #777; }
           }
-          .print-header img { display: none; } /* Hide logo by default, only show in print */
-          .print-footer { display: none; } /* Hide footer by default */
+          .print-header img { display: none; } 
+          .print-footer { display: none; } 
         </style>
       `);
       printWindow.document.write('</head><body>');
-      printWindow.document.write('<div class="print-header print-only"><img src="https://picsum.photos/seed/aylflogo/100/50" alt="AYLF Logo" data-ai-hint="organization logo"><span>AYLF Small Group Tracker</span></div>');
+      printWindow.document.write(`<div class="print-header print-only"><img src="https://picsum.photos/seed/aylflogo/150/75" alt="AYLF Logo" data-ai-hint="organization logo"><span>${APP_NAME}</span></div>`);
       printWindow.document.write(`<h1>Coordinator & Leader Roster</h1>`);
       printWindow.document.write(`<div class="filter-info">Report Period: ${getCurrentFilterDisplay()}</div>`);
       const tableContent = document.getElementById('roster-table')?.outerHTML;
@@ -191,7 +193,7 @@ export default function CertificatesPage() {
       } else {
         printWindow.document.write('<p>No data to print.</p>');
       }
-      printWindow.document.write('<div class="print-footer print-only">Generated on: ' + new Date().toLocaleDateString() + ' &copy; AYLF Small Group Tracker</div>');
+      printWindow.document.write(`<div class="print-footer print-only">Generated on: ${new Date().toLocaleDateString()} &copy; ${APP_NAME}</div>`);
       printWindow.document.write('</body></html>');
       printWindow.document.close();
       printWindow.focus();
@@ -312,10 +314,10 @@ export default function CertificatesPage() {
       {selectedUserForCertificate && (
         <Dialog open={isCertificateModalOpen} onOpenChange={setIsCertificateModalOpen}>
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-[900px] p-0 overflow-hidden">
-            <DialogHeader className="p-6 pb-0"> {/* Moved header out of scroll area for better visibility */}
+            <DialogHeader className="p-6 pb-0">
               <DialogTitle>Certificate of Service for {selectedUserForCertificate.name}</DialogTitle>
             </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto"> {/* Scrollable content area */}
+            <div className="max-h-[70vh] overflow-y-auto"> 
                 <PrintableCertificate 
                     user={selectedUserForCertificate} 
                     entityName={getEntityName(selectedUserForCertificate)}
@@ -335,7 +337,7 @@ export default function CertificatesPage() {
                           @page { size: A4 portrait; margin: 15mm; }
                           body { margin: 0; font-family: "Times New Roman", Times, serif; color: #333; }
                           .certificate-container { border: 6px double hsl(var(--primary)); padding: 25mm; text-align: center; background-color: hsl(var(--background)); position: relative; width: 180mm; height: 267mm; margin: auto; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
-                          .logo { border-radius: 9999px; margin-bottom: 10mm; width: 25mm; height: 25mm; object-fit: contain; }
+                          .logo { border-radius: 9999px; margin-bottom: 10mm; width: 30mm; height: 30mm; object-fit: contain; }
                           .title { font-size: 24pt; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 5mm; text-transform: uppercase; letter-spacing: 1px;}
                           .subtitle { font-size: 14pt; color: hsl(var(--muted-foreground)); margin-bottom: 15mm; }
                           .presented-to { font-size: 12pt; margin-bottom: 2mm; }
@@ -348,7 +350,7 @@ export default function CertificatesPage() {
                           .signature-line { border-top: 1px solid hsl(var(--foreground)); width: 100%; margin: 0 auto 2mm auto; }
                           .signature-title { font-size: 10pt; color: hsl(var(--muted-foreground)); }
                           .footer-text { font-size: 8pt; color: hsl(var(--muted-foreground)); margin-top: 15mm; }
-                          .decorative-corner { display: none; } /* Hide decorative corners for simpler print */
+                          .decorative-corner { display: none; } 
 
                           /* Ensure primary and other theme colors are applied in print */
                           :root {
@@ -376,4 +378,3 @@ export default function CertificatesPage() {
     </RoleBasedGuard>
   );
 }
-

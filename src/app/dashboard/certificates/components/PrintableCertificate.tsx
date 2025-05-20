@@ -49,10 +49,10 @@ export function PrintableCertificate({ user, entityName, appName }: PrintableCer
 
         <div className="flex justify-center my-4 md:my-6">
           <Image 
-            src="https://picsum.photos/seed/aylflogo/120/120" // Placeholder for actual logo
+            src="https://picsum.photos/seed/aylflogo/240/240" // Larger placeholder for logo
             alt={`${appName} Logo`} 
-            width={80} // Adjusted size for better print proportion
-            height={80} 
+            width={100} // Increased width for screen display
+            height={100} // Increased height for screen display
             className="rounded-full logo"
             data-ai-hint="organization logo"
           />
@@ -94,3 +94,4 @@ export function PrintableCertificate({ user, entityName, appName }: PrintableCer
     </div>
   );
 }
+
