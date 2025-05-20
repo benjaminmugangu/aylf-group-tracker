@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROLES } from "@/lib/constants";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { mockActivities, mockMembers, mockReports, mockSites, mockSmallGroups, mockTransactions } from "@/lib/mockData";
-import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UsersRound, Briefcase, Lightbulb, Zap } from "lucide-react"; 
+import { Activity, BarChart3, Building, FileText, Users, DollarSign, ListChecks, UsersRound, Briefcase, Lightbulb, Zap, Printer } from "lucide-react"; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -108,17 +108,17 @@ export default function DashboardPage() {
         }
         assignmentText = `${sgUserRole} of ${sg.name || 'your small group'}${site ? ` (${site.name})` : ''}.`;
       } else {
-        // This case implies the user is logged in as SG Leader but their smallGroupId is not found
-        // or their ID doesn't match any specific role in the found SG.
-        // Defaulting to a generic SG leader message.
         assignmentText = "Leader of your small group.";
       }
     } else {
-      // Fallback for any other unhandled role or missing assignment info
       assignmentText = "Overview.";
     }
     return `${assignmentText} Filter: ${dateFilter.display}`;
   }, [currentUser, dateFilter]);
+
+  const handlePrintPage = () => {
+    window.print();
+  };
 
 
   return (
@@ -127,9 +127,14 @@ export default function DashboardPage() {
         title={`Welcome, ${currentUser?.name || 'User'}!`}
         description={pageDescription}
         icon={currentUser?.role === ROLES.NATIONAL_COORDINATOR ? Building : (currentUser?.role === ROLES.SITE_COORDINATOR ? ListChecks : Users)}
+        actions={
+          <Button variant="outline" onClick={handlePrintPage} className="no-print">
+            <Printer className="mr-2 h-4 w-4" /> Print Page / Export PDF
+          </Button>
+        }
       />
 
-      <div className="mb-6">
+      <div className="mb-6 no-print">
         <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey}/>
       </div>
 
@@ -169,7 +174,7 @@ export default function DashboardPage() {
               value={totalSmallGroups} 
               icon={UsersRound} 
               description="Active small groups"
-              href="/dashboard/sites" // Changed from /dashboard/members
+              href="/dashboard/sites" 
             />
             <StatCard 
               title="Net Balance" 
@@ -190,9 +195,9 @@ export default function DashboardPage() {
               />
              <StatCard 
                title="Site Small Groups" 
-               value={mockSmallGroups.filter(sg => sg.siteId === currentUser?.siteId).length} // Small group count not date filtered
+               value={mockSmallGroups.filter(sg => sg.siteId === currentUser?.siteId).length} 
                icon={UsersRound}
-               href={currentUser?.siteId ? `/dashboard/sites/${currentUser.siteId}` : "/dashboard/sites"} // Changed from /dashboard/members
+               href={currentUser?.siteId ? `/dashboard/sites/${currentUser.siteId}` : "/dashboard/sites"} 
               />
           </>
         )}
@@ -245,7 +250,7 @@ export default function DashboardPage() {
                     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
                     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                    if (percent === 0) return null; // Don't render label if percent is 0
+                    if (percent === 0) return null; 
                     return (
                       <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="12px">
                         {`${(percent * 100).toFixed(0)}%`}
@@ -265,7 +270,7 @@ export default function DashboardPage() {
       </div>
 
       {currentUser?.role === ROLES.NATIONAL_COORDINATOR && (
-        <Card className="shadow-lg mb-8">
+        <Card className="shadow-lg mb-8 no-print">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Zap className="text-primary"/> Quick Actions</CardTitle>
           </CardHeader>
@@ -340,3 +345,4 @@ export default function DashboardPage() {
     </RoleBasedGuard>
   );
 }
+

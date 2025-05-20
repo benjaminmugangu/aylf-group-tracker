@@ -43,8 +43,8 @@ const REPORT_PERIOD_OPTIONS: { value: ReportPeriodType; label: string }[] = [
 
 const generateYearOptions = () => {
   const options = [];
-  const maxYear = 2028; // Adjusted maxYear
-  const minYear = 2000;
+  const maxYear = 2028; 
+  const minYear = 2014; // Updated minYear to 2014
   for (let year = maxYear; year >= minYear; year--) {
     options.push({ value: year.toString(), label: year.toString() });
   }
@@ -53,7 +53,7 @@ const generateYearOptions = () => {
 const YEAR_OPTIONS = generateYearOptions();
 
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
-  value: (i).toString(), // 0 for January, 11 for December
+  value: (i).toString(), 
   label: format(new Date(0, i), "MMMM"),
 }));
 
@@ -91,34 +91,35 @@ export default function CertificatesPage() {
         endDate = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
         break;
       case "last_7_days":
-        startDate = subDays(now, 6);
-        endDate = now;
+        startDate = subDays(now, 6); // Start of 7 days ago
+        endDate = now; // End of today
         break;
       case "last_30_days":
-        startDate = subDays(now, 29);
-        endDate = now;
+        startDate = subDays(now, 29); // Start of 30 days ago
+        endDate = now; // End of today
         break;
       case "all_time":
       default:
         // No date filtering
         break;
     }
+    
+    if(startDate) startDate = startOfDay(startDate);
+    if(endDate) endDate = endOfDay(endDate);
+
 
     return mockUsers.filter(user => {
       const isLeaderOrCoordinator = user.role === ROLES.SITE_COORDINATOR || user.role === ROLES.SMALL_GROUP_LEADER;
       if (!isLeaderOrCoordinator) return false;
-      if (!user.mandateStartDate) return false; // Must have a start date
+      if (!user.mandateStartDate) return false; 
 
-      if (!startDate || !endDate) return true; // If no specific period, show all
+      if (!startDate || !endDate) return true; 
 
       const mandateStart = parseISO(user.mandateStartDate);
-      // If mandateEndDate is present, use it; otherwise, assume mandate is ongoing (use 'now' or a far future date for comparison)
       const mandateEnd = user.mandateEndDate ? parseISO(user.mandateEndDate) : now;
 
       if (!isValid(mandateStart) || !isValid(mandateEnd)) return false;
 
-      // Check for overlap:
-      // (MandateStart <= PeriodEnd) AND (MandateEnd >= PeriodStart)
       return mandateStart <= endDate && mandateEnd >= startDate;
     })
     .sort((a,b) => (a.mandateEndDate ? 1 : -1) - (b.mandateEndDate ? 1: -1) || new Date(b.mandateStartDate || 0).getTime() - new Date(a.mandateStartDate || 0).getTime());
@@ -160,8 +161,28 @@ export default function CertificatesPage() {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write('<html><head><title>Coordinator & Leader Roster</title>');
-      printWindow.document.write('<style> body { font-family: Arial, sans-serif; margin: 20px; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; } h1 { text-align: center; } .filter-info { margin-bottom: 15px; font-size: 0.9em; color: #555; } @media print { .no-print { display: none !important; } } </style>');
+      printWindow.document.write(`
+        <style>
+          @media print {
+            @page { size: A4 landscape; margin: 20mm; }
+            body { font-family: Arial, sans-serif; font-size: 10pt; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            th { background-color: #eee; font-weight: bold; }
+            h1 { text-align: center; font-size: 16pt; margin-bottom: 5px; }
+            .filter-info { text-align: center; margin-bottom: 15px; font-size: 9pt; color: #555; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .print-header img { max-height: 50px; }
+            .print-footer { position: fixed; bottom: 10mm; left: 20mm; right: 20mm; text-align: center; font-size: 8pt; color: #777; }
+          }
+          .print-header img { display: none; } /* Hide logo by default, only show in print */
+          .print-footer { display: none; } /* Hide footer by default */
+        </style>
+      `);
       printWindow.document.write('</head><body>');
+      printWindow.document.write('<div class="print-header print-only"><img src="https://picsum.photos/seed/aylflogo/100/50" alt="AYLF Logo" data-ai-hint="organization logo"><span>AYLF Small Group Tracker</span></div>');
       printWindow.document.write(`<h1>Coordinator & Leader Roster</h1>`);
       printWindow.document.write(`<div class="filter-info">Report Period: ${getCurrentFilterDisplay()}</div>`);
       const tableContent = document.getElementById('roster-table')?.outerHTML;
@@ -170,6 +191,7 @@ export default function CertificatesPage() {
       } else {
         printWindow.document.write('<p>No data to print.</p>');
       }
+      printWindow.document.write('<div class="print-footer print-only">Generated on: ' + new Date().toLocaleDateString() + ' &copy; AYLF Small Group Tracker</div>');
       printWindow.document.write('</body></html>');
       printWindow.document.close();
       printWindow.focus();
@@ -290,14 +312,16 @@ export default function CertificatesPage() {
       {selectedUserForCertificate && (
         <Dialog open={isCertificateModalOpen} onOpenChange={setIsCertificateModalOpen}>
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-[900px] p-0 overflow-hidden">
-            <DialogHeader className="sr-only"> {/* Title is visually present in PrintableCertificate */}
+            <DialogHeader className="p-6 pb-0"> {/* Moved header out of scroll area for better visibility */}
               <DialogTitle>Certificate of Service for {selectedUserForCertificate.name}</DialogTitle>
             </DialogHeader>
-            <PrintableCertificate 
-                user={selectedUserForCertificate} 
-                entityName={getEntityName(selectedUserForCertificate)}
-                appName={APP_NAME} 
-            />
+            <div className="max-h-[70vh] overflow-y-auto"> {/* Scrollable content area */}
+                <PrintableCertificate 
+                    user={selectedUserForCertificate} 
+                    entityName={getEntityName(selectedUserForCertificate)}
+                    appName={APP_NAME} 
+                />
+            </div>
             <DialogFooter className="p-6 bg-muted border-t no-print">
               <Button variant="outline" onClick={() => setIsCertificateModalOpen(false)}>Close</Button>
               <Button onClick={() => {
@@ -306,7 +330,34 @@ export default function CertificatesPage() {
                     const printWindow = window.open('', '_blank');
                     if(printWindow) {
                         printWindow.document.write('<html><head><title>Print Certificate</title>');
-                        printWindow.document.write('<style> body { margin: 20px; font-family: "Times New Roman", serif; } .certificate-container { border: 5px solid hsl(var(--primary)); padding: 30px; text-align: center; background-color: hsl(var(--background)); position: relative; } .title { font-size: 28px; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 10px; } .subtitle { font-size: 20px; color: hsl(var(--muted-foreground)); margin-bottom: 30px; } .presented-to { font-size: 18px; margin-bottom: 5px; } .user-name { font-size: 24px; font-weight: bold; color: hsl(var(--foreground)); margin-bottom: 20px; } .service-as { font-size: 16px; margin-bottom: 5px; } .role-entity { font-size: 18px; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 20px; } .period { font-size: 16px; margin-bottom: 30px; } .signatures { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align:center; align-items:end; } .signature-line { border-top: 1px solid hsl(var(--foreground)); width: 200px; margin: 0 auto 5px auto; } .signature-title { font-size: 14px; color: hsl(var(--muted-foreground)); } .footer-text { font-size: 10px; color: hsl(var(--muted-foreground)); margin-top: 40px;} img.logo { border-radius: 9999px; margin-bottom: 1.5rem; } .decorative-corner { position: absolute; width: 3rem; height: 3rem; border-color: hsla(var(--primary) / 0.5); } .decorative-corner.top-left { top: 0.5rem; left: 0.5rem; border-top-width: 2px; border-left-width: 2px; } .decorative-corner.top-right { top: 0.5rem; right: 0.5rem; border-top-width: 2px; border-right-width: 2px; } .decorative-corner.bottom-left { bottom: 0.5rem; left: 0.5rem; border-bottom-width: 2px; border-left-width: 2px; } .decorative-corner.bottom-right { bottom: 0.5rem; right: 0.5rem; border-bottom-width: 2px; border-right-width: 2px; } @media print { body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display: none; } .signatures { grid-template-columns: 1fr 1fr !important; } } </style>');
+                        printWindow.document.write(`
+                        <style>
+                          @page { size: A4 portrait; margin: 15mm; }
+                          body { margin: 0; font-family: "Times New Roman", Times, serif; color: #333; }
+                          .certificate-container { border: 6px double hsl(var(--primary)); padding: 25mm; text-align: center; background-color: hsl(var(--background)); position: relative; width: 180mm; height: 267mm; margin: auto; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+                          .logo { border-radius: 9999px; margin-bottom: 10mm; width: 25mm; height: 25mm; object-fit: contain; }
+                          .title { font-size: 24pt; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 5mm; text-transform: uppercase; letter-spacing: 1px;}
+                          .subtitle { font-size: 14pt; color: hsl(var(--muted-foreground)); margin-bottom: 15mm; }
+                          .presented-to { font-size: 12pt; margin-bottom: 2mm; }
+                          .user-name { font-size: 20pt; font-weight: bold; color: hsl(var(--foreground)); margin-bottom: 8mm; }
+                          .service-as { font-size: 11pt; margin-bottom: 2mm; }
+                          .role-entity { font-size: 14pt; font-weight: bold; color: hsl(var(--primary)); margin-bottom: 8mm; }
+                          .period { font-size: 11pt; margin-bottom: 15mm; }
+                          .signatures { margin-top: 20mm; display: flex; justify-content: space-around; align-items: flex-end; width: 100%; }
+                          .signatures > div { width: 45%; text-align: center; }
+                          .signature-line { border-top: 1px solid hsl(var(--foreground)); width: 100%; margin: 0 auto 2mm auto; }
+                          .signature-title { font-size: 10pt; color: hsl(var(--muted-foreground)); }
+                          .footer-text { font-size: 8pt; color: hsl(var(--muted-foreground)); margin-top: 15mm; }
+                          .decorative-corner { display: none; } /* Hide decorative corners for simpler print */
+
+                          /* Ensure primary and other theme colors are applied in print */
+                          :root {
+                            --background: 240 5.9% 95%; --foreground: 240 5.9% 10%; --card: 0 0% 100%; --card-foreground: 240 5.9% 10%; --popover: 0 0% 100%; --popover-foreground: 240 5.9% 10%; --primary: 100 60% 29%; --primary-foreground: 0 0% 100%; --secondary: 240 4.8% 90%; --secondary-foreground: 240 5.9% 20%; --muted: 240 4.8% 85%; --muted-foreground: 240 3.8% 46.1%; --accent: 180 100% 25%; --accent-foreground: 0 0% 100%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --border: 240 5.9% 89.8%; --input: 240 5.9% 93%; --ring: 100 60% 35%;
+                          }
+                          /* Force background colors and images to print */
+                          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                        </style>
+                        `);
                         printWindow.document.write('</head><body>');
                         printWindow.document.write(printableContent.innerHTML);
                         printWindow.document.write('</body></html>');
@@ -316,7 +367,7 @@ export default function CertificatesPage() {
                     }
                   }
               }}>
-                <Printer className="mr-2 h-4 w-4"/> Print Certificate
+                <Printer className="mr-2 h-4 w-4"/> Print / Export to PDF
               </Button>
             </DialogFooter>
           </DialogContent>

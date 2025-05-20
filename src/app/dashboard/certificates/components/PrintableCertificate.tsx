@@ -35,57 +35,61 @@ export function PrintableCertificate({ user, entityName, appName }: PrintableCer
   };
 
   return (
-    <div id="certificate-content" className="p-8 md:p-12 font-serif">
-      <div className="certificate-container border-4 border-primary p-8 md:p-12 text-center bg-background relative">
-        {/* Decorative corner elements (optional) */}
-        <div className="absolute top-2 left-2 w-12 h-12 border-t-2 border-l-2 border-primary/50"></div>
-        <div className="absolute top-2 right-2 w-12 h-12 border-t-2 border-r-2 border-primary/50"></div>
-        <div className="absolute bottom-2 left-2 w-12 h-12 border-b-2 border-l-2 border-primary/50"></div>
-        <div className="absolute bottom-2 right-2 w-12 h-12 border-b-2 border-r-2 border-primary/50"></div>
+    // The #certificate-content ID is targeted by the print function in the parent page
+    <div id="certificate-content" className="p-4 md:p-8 font-serif bg-background text-foreground">
+      {/* This inner div is what will actually be styled for A4 printing */}
+      <div className="certificate-container mx-auto border-4 border-primary p-6 md:p-10 text-center relative shadow-lg"
+           style={{ width: '210mm', minHeight: '297mm', boxSizing: 'border-box' }} // A4 dimensions, minHeight for content flow
+      >
+        {/* Decorative corner elements - these might be tricky for print, consider simplifying or using CSS borders */}
+        <div className="decorative-corner top-left absolute top-1 left-1 w-10 h-10 border-t-2 border-l-2 border-primary/50"></div>
+        <div className="decorative-corner top-right absolute top-1 right-1 w-10 h-10 border-t-2 border-r-2 border-primary/50"></div>
+        <div className="decorative-corner bottom-left absolute bottom-1 left-1 w-10 h-10 border-b-2 border-l-2 border-primary/50"></div>
+        <div className="decorative-corner bottom-right absolute bottom-1 right-1 w-10 h-10 border-b-2 border-r-2 border-primary/50"></div>
 
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center my-4 md:my-6">
           <Image 
-            src="https://picsum.photos/seed/aylflogo/120/120" 
+            src="https://picsum.photos/seed/aylflogo/120/120" // Placeholder for actual logo
             alt={`${appName} Logo`} 
-            width={100} 
-            height={100} 
+            width={80} // Adjusted size for better print proportion
+            height={80} 
             className="rounded-full logo"
             data-ai-hint="organization logo"
           />
         </div>
 
-        <h1 className="title text-3xl md:text-4xl font-bold text-primary mb-2">
+        <h1 className="title text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">
           Certificate of Service
         </h1>
-        <h2 className="subtitle text-xl md:text-2xl text-muted-foreground mb-8">
+        <h2 className="subtitle text-lg md:text-xl text-muted-foreground mb-4 md:mb-6">
           Awarded by {appName}
         </h2>
 
-        <p className="presented-to text-lg mb-2">This certificate is proudly presented to</p>
-        <p className="user-name text-2xl md:text-3xl font-bold text-foreground mb-6">
+        <p className="presented-to text-md md:text-lg mb-1">This certificate is proudly presented to</p>
+        <p className="user-name text-xl md:text-2xl font-bold text-foreground mb-3 md:mb-4">
           {user.name}
         </p>
 
-        <p className="service-as text-md mb-1">For their dedicated service and outstanding contributions as</p>
-        <p className="role-entity text-lg md:text-xl font-semibold text-primary/90 mb-4">
+        <p className="service-as text-sm md:text-md mb-0.5">For their dedicated service and outstanding contributions as</p>
+        <p className="role-entity text-md md:text-lg font-semibold text-primary/90 mb-2 md:mb-3">
           {getRoleDescription()}
         </p>
 
-        <p className="period text-md mb-10">
+        <p className="period text-sm md:text-md mb-6 md:mb-8">
           During the period: {mandatePeriod()}
         </p>
 
-        <div className="signatures mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-end">
+        <div className="signatures mt-auto pt-6 md:pt-8 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-end">
           <div>
-            <div className="signature-line w-48 md:w-60 h-px bg-foreground mx-auto mb-2"></div>
-            <p className="signature-title text-sm text-muted-foreground">National Coordinator Signature</p>
+            <div className="signature-line w-3/4 md:w-4/5 h-px bg-foreground mx-auto mb-1"></div>
+            <p className="signature-title text-xs md:text-sm text-muted-foreground">National Coordinator Signature</p>
           </div>
           <div>
-            <div className="signature-line w-48 md:w-60 h-px bg-foreground mx-auto mb-2"></div>
-            <p className="signature-title text-sm text-muted-foreground">Date Issued: {format(new Date(), "MMMM d, yyyy")}</p>
+            <div className="signature-line w-3/4 md:w-4/5 h-px bg-foreground mx-auto mb-1"></div>
+            <p className="signature-title text-xs md:text-sm text-muted-foreground">Date Issued: {format(new Date(), "MMMM d, yyyy")}</p>
           </div>
         </div>
-         <p className="footer-text text-xs text-muted-foreground mt-10">This certificate acknowledges the valuable role and commitment demonstrated by the recipient in furthering the mission of {appName}.</p>
+         <p className="footer-text text-xs text-muted-foreground mt-6 md:mt-8">This certificate acknowledges the valuable role and commitment demonstrated by the recipient in furthering the mission of {appName}.</p>
       </div>
     </div>
   );

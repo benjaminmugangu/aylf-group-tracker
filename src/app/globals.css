@@ -92,3 +92,83 @@ body {
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Print specific styles */
+@media print {
+  body {
+    font-family: Arial, sans-serif; /* Use a common print-friendly font */
+    font-size: 10pt;
+    background-color: white !important; /* Ensure white background for printing */
+    color: black !important; /* Ensure black text for printing */
+    -webkit-print-color-adjust: exact; /* Force printing of background colors and images in Chrome/Safari */
+    print-color-adjust: exact; /* Standard property */
+  }
+
+  /* Hide elements not relevant for printing */
+  [data-sidebar="sidebar"], 
+  [data-sidebar="trigger"], 
+  .no-print,
+  header.sticky, /* Main app header */
+  footer.border-t, /* Main app footer */
+  .group\/sidebar-wrapper > .peer, /* Sidebar placeholder div */
+  .user-nav-dropdown /* Assuming UserNav has a class like this or use its specific selector */
+   {
+    display: none !important;
+  }
+
+  /* Ensure main content takes full width */
+  main.flex-1, .flex-1 {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Resetting some page layout for print */
+  .container, .page-container /* Example classes, adjust to your layout */ {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Improve readability of cards and tables in print */
+  .card, .table {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    page-break-inside: avoid; /* Try to avoid breaking cards/tables across pages */
+  }
+  .card-header, .card-content, .card-footer {
+    padding: 8pt !important;
+  }
+  th, td {
+    padding: 4pt !important;
+    border: 1px solid #ddd !important;
+  }
+  th {
+    background-color: #f0f0f0 !important;
+  }
+
+  /* Ensure charts are visible - this might need specific adjustments per chart library */
+  .recharts-wrapper, canvas, svg {
+    display: block !important; /* Ensure they are not hidden by other print styles */
+    max-width: 100% !important; /* Ensure they scale down if too large */
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Remove excessive margins or paddings that might cause issues in print */
+  .mb-6, .mb-8, .mt-6, .mt-8, .gap-6, .gap-8 {
+    margin-bottom: 10pt !important; /* Adjust as needed */
+    margin-top: 10pt !important;
+    gap: 10pt !important;
+  }
+  .p-4, .p-6, .p-8 {
+    padding: 10pt !important;
+  }
+
+  @page {
+    size: A4; /* Default page size, can be overridden by specific components */
+    margin: 20mm; /* Default margins */
+  }
+}
