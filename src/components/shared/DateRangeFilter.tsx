@@ -35,19 +35,20 @@ export type PredefinedRange =
   | 'this_week' 
   | 'last_week'
   | 'this_month' 
+  | 'last_month' // Added
   | 'this_year'
-  | 'specific_period' // For Year/Month selection
+  | 'specific_period' // For Year/Month selection via dropdowns
   | 'last_7_days' 
   | 'last_30_days' 
   | 'last_90_days'
   | 'last_12_months'
-  | 'custom';
+  | 'custom'; // For when the popover calendar is used directly
 
 export interface DateFilterValue {
   rangeKey: PredefinedRange;
   customRange?: DateRange;
   specificYear?: string; 
-  specificMonth?: string; // "0"-"11", or "all" if filtering by entire year
+  specificMonth?: string; // "0"-"11" (for specific month), or "all" (for whole year via specific_period)
   display: string;
 }
 
@@ -65,23 +66,30 @@ const PREDEFINED_RANGES_OPTIONS: { value: PredefinedRange; label: string }[] = [
   { value: 'this_week', label: 'This Week (Mon-Sun)' },
   { value: 'last_week', label: 'Last Week (Mon-Sun)' },
   { value: 'this_month', label: 'This Month (Current)' },
+  { value: 'last_month', label: 'Last Month' }, // Added
   { value: 'this_year', label: 'This Year (Current)' },
-  { value: 'specific_period', label: 'Specific Period' },
+  { value: 'specific_period', label: 'Specific Year/Month' }, // Renamed for clarity
   { value: 'last_7_days', label: 'Last 7 Days' },
   { value: 'last_30_days', label: 'Last 30 Days' },
   { value: 'last_90_days', label: 'Last 90 Days' },
   { value: 'last_12_months', label: 'Last 12 Months' },
 ];
 
-const ALL_MONTHS_VALUE = "all";
+const ALL_MONTHS_VALUE = "all"; // Represents selecting the entire year
 
-const YEAR_OPTIONS = Array.from({ length: (2028 - 2000) + 1 }, (_, i) => {
-  const year = (2000 + i).toString();
-  return { value: year, label: year };
-});
+const generateYearOptions = () => {
+  const currentYr = getYear(new Date());
+  const options = [];
+  // Start from 2014 up to current year + 3
+  for (let year = currentYr + 3; year >= 2014; year--) {
+    options.push({ value: year.toString(), label: year.toString() });
+  }
+  return options;
+};
+const YEAR_OPTIONS = generateYearOptions();
 
 const MONTH_OPTIONS: { value: string; label: string }[] = [
-  { value: ALL_MONTHS_VALUE, label: "All Months" },
+  { value: ALL_MONTHS_VALUE, label: "All Months" }, // For selecting the whole year
   ...Array.from({ length: 12 }, (_, i) => ({
     value: i.toString(), 
     label: format(new Date(0, i), "MMMM"),
@@ -152,16 +160,19 @@ export function DateRangeFilter({
   
   const handleMainRangeChange = (value: PredefinedRange) => {
     setSelectedRangeKey(value);
-    setCustomDateRange(undefined); // Clear custom range
+    setCustomDateRange(undefined); // Clear custom range when a predefined is chosen
 
     if (value === 'specific_period') {
+      // When "Specific Period" is chosen, ensure year/month selectors are ready
       const yearToUse = currentSpecificYear || getYear(new Date()).toString();
       const monthToUse = currentSpecificMonth || ALL_MONTHS_VALUE;
-      if (!currentSpecificYear) setCurrentSpecificYear(yearToUse);
-      if (!currentSpecificMonth) setCurrentSpecificMonth(monthToUse);
+      setCurrentSpecificYear(yearToUse); // Make sure they are set if not already
+      setCurrentSpecificMonth(monthToUse);
       triggerFilterChange(value, undefined, yearToUse, monthToUse);
     } else {
-      // For other predefined ranges, year/month selectors are not primary drivers
+      // For other predefined ranges, clear specific year/month and trigger change
+      setCurrentSpecificYear(undefined); 
+      setCurrentSpecificMonth(undefined);
       triggerFilterChange(value, undefined, undefined, undefined);
     }
   };
@@ -169,24 +180,25 @@ export function DateRangeFilter({
   const handleCustomDateChange = (date: DateRange | undefined) => {
     setCustomDateRange(date);
     if (date?.from) {
-      setSelectedRangeKey('custom'); 
+      setSelectedRangeKey('custom'); // Explicitly set to 'custom' when calendar is used
       setCurrentSpecificYear(undefined); 
       setCurrentSpecificMonth(undefined);
       triggerFilterChange('custom', date, undefined, undefined);
-      if (date.to || !date.from) { 
+      if (date.to || !date.from) { // Close popover if a full range is selected or date is cleared
          setPopoverOpen(false);
       }
-    } else { 
-      // If custom date is cleared, revert to a default or previous state
+    } else if (!date?.from && !date?.to && selectedRangeKey === 'custom') { 
+      // If custom date is cleared, revert to 'all_time'
       handleMainRangeChange('all_time'); 
     }
   };
 
   const handleSpecificYearChange = (year: string) => {
     setCurrentSpecificYear(year);
-    // If month is already set (and not 'all'), keep it, otherwise default to 'all' for the new year
-    const monthToUse = currentSpecificMonth && currentSpecificMonth !== ALL_MONTHS_VALUE ? currentSpecificMonth : ALL_MONTHS_VALUE;
+    // When year changes, default month to "All Months" for that year
+    const monthToUse = ALL_MONTHS_VALUE;
     setCurrentSpecificMonth(monthToUse);
+    
     setSelectedRangeKey('specific_period'); 
     setCustomDateRange(undefined);
     triggerFilterChange('specific_period', undefined, year, monthToUse);
@@ -194,18 +206,21 @@ export function DateRangeFilter({
 
   const handleSpecificMonthChange = (month: string) => {
     setCurrentSpecificMonth(month);
-    const yearToUse = currentSpecificYear || getYear(new Date()).toString();
-    if(!currentSpecificYear) setCurrentSpecificYear(yearToUse); // Ensure year is set
+    const yearToUse = currentSpecificYear || getYear(new Date()).toString(); // Should already be set
+    if(!currentSpecificYear) setCurrentSpecificYear(yearToUse);
     
     setSelectedRangeKey('specific_period');
     setCustomDateRange(undefined);
     triggerFilterChange('specific_period', undefined, yearToUse, month);
   };
   
+  // Disable calendar popover if a specific period (Year/Month via dropdowns) is active
+  const isCalendarDisabled = selectedRangeKey === 'specific_period' && !!currentSpecificYear;
+
   return (
     <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
       <Select value={selectedRangeKey} onValueChange={(value) => handleMainRangeChange(value as PredefinedRange)}>
-        <SelectTrigger className="w-full sm:w-[190px]">
+        <SelectTrigger className="w-full sm:w-[200px]"> {/* Adjusted width */}
           <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
           <SelectValue placeholder="Filter by date" />
         </SelectTrigger>
@@ -218,7 +233,7 @@ export function DateRangeFilter({
 
       {selectedRangeKey === 'specific_period' && (
         <>
-          <Select value={currentSpecificYear} onValueChange={handleSpecificYearChange}>
+          <Select value={currentSpecificYear || ""} onValueChange={handleSpecificYearChange}>
             <SelectTrigger className="w-full sm:w-[120px]">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
@@ -229,9 +244,9 @@ export function DateRangeFilter({
             </SelectContent>
           </Select>
           
-          {currentSpecificYear && (
-            <Select value={currentSpecificMonth} onValueChange={handleSpecificMonthChange}>
-              <SelectTrigger className="w-full sm:w-[160px]">
+          {currentSpecificYear && ( // Only show month selector if a year is selected
+            <Select value={currentSpecificMonth || ""} onValueChange={handleSpecificMonthChange}>
+              <SelectTrigger className="w-full sm:w-[180px]"> {/* Adjusted width */}
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
               <SelectContent>
@@ -251,6 +266,8 @@ export function DateRangeFilter({
           <Button
             variant="outline"
             className="w-full sm:flex-grow sm:min-w-[240px] justify-start text-left font-normal"
+            disabled={isCalendarDisabled} // Disable if specific year/month is active
+            title={isCalendarDisabled ? "Clear 'Specific Period' to use custom range" : "Select custom date range"}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {displayLabel}
@@ -263,6 +280,7 @@ export function DateRangeFilter({
             onSelect={handleCustomDateChange}
             initialFocus
             numberOfMonths={2}
+            disabled={isCalendarDisabled}
           />
         </PopoverContent>
       </Popover>
@@ -287,12 +305,10 @@ export function getDateRangeFromFilterValue(filterValue: DateFilterValue): { sta
         if (filterValue.specificMonth && filterValue.specificMonth !== ALL_MONTHS_VALUE) {
             const monthNum = parseInt(filterValue.specificMonth, 10); // "0"-"11"
             if (!isNaN(monthNum) && monthNum >= 0 && monthNum <= 11) {
-                let dateForMonth = new Date();
-                dateForMonth = setYear(dateForMonth, yearNum);
-                dateForMonth = setMonth(dateForMonth, monthNum);
+                let dateForMonth = new Date(yearNum, monthNum, 1); // Use yearNum directly
                 startDate = startOfMonth(dateForMonth);
                 endDate = endOfMonth(dateForMonth);
-            } else { // Invalid month, default to full year or handle error
+            } else { 
                 startDate = startOfYear(new Date(yearNum, 0, 1));
                 endDate = endOfYear(new Date(yearNum, 11, 31));
             }
@@ -320,7 +336,12 @@ export function getDateRangeFromFilterValue(filterValue: DateFilterValue): { sta
         startDate = startOfMonth(now);
         endDate = endOfMonth(now);
         break;
-      case 'this_year':
+      case 'last_month': // Added
+        const lastMonthDate = subMonths(now, 1);
+        startDate = startOfMonth(lastMonthDate);
+        endDate = endOfMonth(lastMonthDate);
+        break;
+        case 'this_year':
         startDate = startOfYear(now);
         endDate = endOfYear(now);
         break;
