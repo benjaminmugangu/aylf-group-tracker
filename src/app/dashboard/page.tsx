@@ -98,7 +98,7 @@ export default function DashboardPage() {
       const sg = mockSmallGroups.find(s => s.id === currentUser.smallGroupId);
       if (sg) {
         const site = mockSites.find(s => s.id === sg.siteId);
-        let sgUserRole = "Member"; // Default, should be more specific
+        let sgUserRole = "Member"; // Default
         if (sg.leaderId === currentUser.id) {
           sgUserRole = "Leader";
         } else if (sg.logisticsAssistantId === currentUser.id) {
@@ -276,29 +276,29 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Link href="/dashboard/reports/submit" passHref>
-              <Button variant="outline" className="w-full justify-start p-4 h-auto">
-                <FileText className="mr-3 h-6 w-6 text-primary" />
-                <div>
+              <Button variant="outline" className="w-full flex items-start justify-start p-3 h-auto text-left">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
+                <div className="whitespace-normal ml-2"> {/* Adjusted: Added ml-2 for spacing if button's gap doesn't apply here */}
                   <p className="font-semibold">Submit New Report</p>
-                  <p className="text-xs text-muted-foreground">Log national, site, or group activity.</p>
+                  <p className="text-xs text-muted-foreground break-words">Log national, site, or group activity.</p>
                 </div>
               </Button>
             </Link>
             <Link href="/dashboard/suggestions" passHref>
-             <Button variant="outline" className="w-full justify-start p-4 h-auto">
-                <Lightbulb className="mr-3 h-6 w-6 text-primary" />
-                 <div>
+             <Button variant="outline" className="w-full flex items-start justify-start p-3 h-auto text-left">
+                <Lightbulb className="h-5 w-5 text-primary shrink-0" />
+                 <div className="whitespace-normal ml-2">
                   <p className="font-semibold">Get AI Suggestions</p>
-                  <p className="text-xs text-muted-foreground">Discover new activity ideas.</p>
+                  <p className="text-xs text-muted-foreground break-words">Discover new activity ideas.</p>
                 </div>
               </Button>
             </Link>
             <Link href="/dashboard/users" passHref>
-             <Button variant="outline" className="w-full justify-start p-4 h-auto">
-                <UsersRound className="mr-3 h-6 w-6 text-primary" />
-                <div>
+             <Button variant="outline" className="w-full flex items-start justify-start p-3 h-auto text-left">
+                <UsersRound className="h-5 w-5 text-primary shrink-0" />
+                <div className="whitespace-normal ml-2">
                   <p className="font-semibold">Manage Users</p>
-                  <p className="text-xs text-muted-foreground">Administer user accounts and roles.</p>
+                  <p className="text-xs text-muted-foreground break-words">Administer user accounts and roles.</p>
                 </div>
               </Button>
             </Link>
@@ -345,4 +345,3 @@ export default function DashboardPage() {
     </RoleBasedGuard>
   );
 }
-
