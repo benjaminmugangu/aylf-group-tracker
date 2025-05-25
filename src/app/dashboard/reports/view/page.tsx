@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIcon, Globe, CalendarDays, Type, Users, Hash, DollarSign, Speaker, UserCheck, Check, ThumbsDown, ThumbsUp, MessageSquare } from "lucide-react"; // Added icons
+import { FileSearch, ListFilter, Search, LayoutGrid, List, Building, Users as UsersIconLucide, Globe, CalendarDays, Type, Users, Hash, DollarSign, Speaker, UserCheck, Check, ThumbsDown, ThumbsUp, MessageSquare } from "lucide-react"; // Added icons
 import type { Report, ReportStatus } from "@/lib/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 
 type ViewMode = "table" | "grid";
@@ -142,7 +143,7 @@ export default function ViewReportsPage() {
     switch(level) {
       case "national": return <Globe className="mr-1 h-3.5 w-3.5"/>;
       case "site": return <Building className="mr-1 h-3.5 w-3.5"/>;
-      case "small_group": return <UsersIcon className="mr-1 h-3.5 w-3.5"/>;
+      case "small_group": return <UsersIconLucide className="mr-1 h-3.5 w-3.5"/>;
       default: return null;
     }
   }
@@ -261,82 +262,105 @@ export default function ViewReportsPage() {
               </div>
             </DialogHeader>
             <ScrollArea className="flex-grow pr-6 -mr-6"> 
-              <div className="py-4 space-y-6">
+              <div className="py-4 space-y-3">
                  {selectedReport.status === "rejected" && selectedReport.reviewNotes && (
-                    <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30">
+                    <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30 mb-4">
                         <h4 className="font-semibold text-destructive mb-1 flex items-center"><MessageSquare className="mr-2 h-4 w-4"/>Rejection Notes:</h4>
                         <p className="text-sm text-destructive/80 whitespace-pre-wrap">{selectedReport.reviewNotes}</p>
                     </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                    <div className="flex items-center">
-                        <CalendarDays className="mr-2 h-4 w-4 text-primary" />
-                        <strong>Activity Date:</strong>&nbsp;{format(new Date(selectedReport.activityDate), "PPP")}
-                    </div>
-                     <div className="flex items-center">
-                        <Type className="mr-2 h-4 w-4 text-primary" />
-                        <strong>Activity Type:</strong>&nbsp;{selectedReport.activityType}
-                    </div>
-                    <div className="flex items-center md:col-span-2">
-                        <Hash className="mr-2 h-4 w-4 text-primary" />
-                        <strong>Thematic:</strong>&nbsp;{selectedReport.thematic}
-                    </div>
-                    {selectedReport.speaker && (
-                         <div className="flex items-center">
-                            <Speaker className="mr-2 h-4 w-4 text-primary" />
-                            <strong>Speaker:</strong>&nbsp;{selectedReport.speaker}
-                        </div>
-                    )}
-                    {selectedReport.moderator && (
-                        <div className="flex items-center">
-                            <UserCheck className="mr-2 h-4 w-4 text-primary" />
-                            <strong>Moderator:</strong>&nbsp;{selectedReport.moderator}
-                        </div>
-                    )}
-                     {(selectedReport.girlsCount !== undefined || selectedReport.boysCount !== undefined) && (
-                        <div className="flex items-center">
-                            <UsersIcon className="mr-2 h-4 w-4 text-primary" />
-                            <strong>Participants:</strong>&nbsp;
-                            {selectedReport.participantsCountReported || 0}
-                            { (selectedReport.girlsCount !== undefined || selectedReport.boysCount !== undefined) && (
-                                <span className="text-xs text-muted-foreground ml-1">
-                                ({selectedReport.girlsCount || 0} Girls, {selectedReport.boysCount || 0} Boys)
-                                </span>
-                            )}
-                        </div>
-                    )}
-                    {selectedReport.amountUsed !== undefined && (
-                         <div className="flex items-center">
-                            <DollarSign className="mr-2 h-4 w-4 text-primary" />
-                            <strong>Amount Used:</strong>&nbsp;{selectedReport.amountUsed} {selectedReport.currency || ''}
-                        </div>
-                    )}
+
+                <div>
+                  <h4 className="font-semibold text-base mb-2 text-primary">Activity Overview</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm border p-3 rounded-md bg-muted/20">
+                      <div className="flex items-start">
+                          <CalendarDays className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                          <div><strong className="font-medium">Activity Date:</strong> {format(new Date(selectedReport.activityDate), "PPP")}</div>
+                      </div>
+                      <div className="flex items-start">
+                          <Type className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                          <div><strong className="font-medium">Activity Type:</strong> {selectedReport.activityType}</div>
+                      </div>
+                      <div className="flex items-start md:col-span-2">
+                          <Hash className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                          <div><strong className="font-medium">Thematic:</strong> {selectedReport.thematic}</div>
+                      </div>
+                      {selectedReport.speaker && (
+                          <div className="flex items-start">
+                              <Speaker className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <div><strong className="font-medium">Speaker:</strong> {selectedReport.speaker}</div>
+                          </div>
+                      )}
+                      {selectedReport.moderator && (
+                          <div className="flex items-start">
+                              <UserCheck className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <div><strong className="font-medium">Moderator:</strong> {selectedReport.moderator}</div>
+                          </div>
+                      )}
+                  </div>
                 </div>
                 
-                {selectedReport.images && selectedReport.images.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-lg mb-2 mt-4 pt-4 border-t">Images:</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {selectedReport.images.map((image, index) => (
-                         <div key={index} className="relative aspect-video rounded-lg overflow-hidden border group">
-                           <Image src={image.url} alt={image.name} layout="fill" objectFit="cover" data-ai-hint="report detail image" className="group-hover:scale-105 transition-transform duration-300"/>
-                           <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <a href={image.url} target="_blank" rel="noopener noreferrer" className="text-white text-xs bg-black/50 px-2 py-1 rounded">View Full Image</a>
-                           </div>
-                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 <div>
-                  <h4 className="font-semibold text-lg mb-1 mt-4 pt-4 border-t">Report Narrative:</h4>
-                  <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">{selectedReport.content}</p>
+                  <h4 className="font-semibold text-base mb-2 mt-3 text-primary">Attendance & Finance</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm border p-3 rounded-md bg-muted/20">
+                      {(selectedReport.girlsCount !== undefined || selectedReport.boysCount !== undefined) && (
+                          <div className="flex items-start">
+                              <Users className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <div>
+                                  <strong className="font-medium">Participants:</strong> {selectedReport.participantsCountReported || 0}
+                                  { (selectedReport.girlsCount !== undefined || selectedReport.boysCount !== undefined) && (
+                                      <span className="text-xs text-muted-foreground ml-1">
+                                      ({selectedReport.girlsCount || 0} Girls, {selectedReport.boysCount || 0} Boys)
+                                      </span>
+                                  )}
+                              </div>
+                          </div>
+                      )}
+                      {selectedReport.amountUsed !== undefined && selectedReport.amountUsed > 0 && (
+                          <div className="flex items-start">
+                              <DollarSign className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
+                              <div><strong className="font-medium">Amount Used:</strong> {selectedReport.amountUsed} {selectedReport.currency || ''}</div>
+                          </div>
+                      )}
+                      {selectedReport.amountUsed === undefined || selectedReport.amountUsed === 0 && (!selectedReport.girlsCount && !selectedReport.boysCount) && (
+                        <p className="text-muted-foreground md:col-span-2">No specific attendance or financial data reported.</p>
+                      )}
+                    </div>
                 </div>
+                
+                <Separator className="my-4" />
+                <div>
+                  <h4 className="font-semibold text-base mb-2 text-primary">Report Narrative</h4>
+                  <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md border">{selectedReport.content}</p>
+                </div>
+
                 {selectedReport.financialSummary && (
-                   <div>
-                     <h4 className="font-semibold text-lg mb-1 mt-4 pt-4 border-t">Additional Financial Notes:</h4>
-                     <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">{selectedReport.financialSummary}</p>
-                   </div>
+                  <>
+                    <Separator className="my-4" />
+                    <div>
+                      <h4 className="font-semibold text-base mb-2 text-primary">Additional Financial Notes</h4>
+                      <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md border">{selectedReport.financialSummary}</p>
+                    </div>
+                  </>
+                )}
+
+                {selectedReport.images && selectedReport.images.length > 0 && (
+                  <>
+                    <Separator className="my-4" />
+                    <div>
+                      <h4 className="font-semibold text-base mb-3 text-primary">Attached Images</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {selectedReport.images.map((image, index) => (
+                          <div key={index} className="relative aspect-video rounded-lg overflow-hidden border group shadow-sm">
+                            <Image src={image.url} alt={image.name} layout="fill" objectFit="cover" data-ai-hint="report detail image" className="group-hover:scale-105 transition-transform duration-300"/>
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <a href={image.url} target="_blank" rel="noopener noreferrer" className="text-white text-xs bg-black/70 px-2 py-1 rounded-sm hover:bg-black/90">View Full Image</a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </ScrollArea>
