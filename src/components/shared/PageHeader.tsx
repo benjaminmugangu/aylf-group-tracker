@@ -19,8 +19,9 @@ export function PageHeader({ title, description, icon: Icon, actions }: PageHead
             {description && <p className="text-sm md:text-base text-muted-foreground mt-1">{description}</p>}
           </div>
         </div>
-        {actions && <div className="flex items-center gap-2 mt-4 md:mt-0">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0 md:ml-auto">{actions}</div>}
       </div>
     </div>
   );
 }
+

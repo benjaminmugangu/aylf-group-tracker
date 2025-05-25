@@ -138,7 +138,7 @@ export default function DashboardPage() {
         <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey}/>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
         <StatCard 
           title="Total Activities" 
           value={totalActivities} 
@@ -276,9 +276,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Link href="/dashboard/reports/submit" passHref>
-              <Button variant="outline" className="w-full flex items-start justify-start p-3 h-auto text-left">
+               <Button variant="outline" className="w-full flex items-start justify-start p-3 h-auto text-left">
                 <FileText className="h-5 w-5 text-primary shrink-0" />
-                <div className="whitespace-normal ml-2"> {/* Adjusted: Added ml-2 for spacing if button's gap doesn't apply here */}
+                <div className="whitespace-normal ml-2">
                   <p className="font-semibold">Submit New Report</p>
                   <p className="text-xs text-muted-foreground break-words">Log national, site, or group activity.</p>
                 </div>
@@ -345,3 +345,4 @@ export default function DashboardPage() {
     </RoleBasedGuard>
   );
 }
+
