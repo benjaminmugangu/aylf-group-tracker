@@ -3,7 +3,7 @@
 
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ActivityChart } from "./components/ActivityChart";
-import { mockActivities } from "@/lib/mockData";
+import { mockActivities, mockSites, mockSmallGroups } from "@/lib/mockData";
 import { RoleBasedGuard } from "@/components/shared/RoleBasedGuard";
 import { ROLES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,33 +17,72 @@ import React, { useState, useMemo } from "react";
 import type { Activity } from "@/lib/types";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth"; // Added useAuth
+import { useAuth } from "@/hooks/useAuth"; 
 
 export default function ActivitiesPage() {
-  const { currentUser } = useAuth(); // Get current user
+  const { currentUser } = useAuth(); 
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
+
+  const baseActivities = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === ROLES.NATIONAL_COORDINATOR) {
+      return mockActivities;
+    }
+    if (currentUser.role === ROLES.SITE_COORDINATOR) {
+      return mockActivities.filter(
+        act => act.siteId === currentUser.siteId || 
+               (act.level === 'small_group' && mockSmallGroups.find(sg => sg.id === act.smallGroupId)?.siteId === currentUser.siteId)
+      );
+    }
+    if (currentUser.role === ROLES.SMALL_GROUP_LEADER) {
+      return mockActivities.filter(act => act.smallGroupId === currentUser.smallGroupId);
+    }
+    return [];
+  }, [currentUser]);
+
+  const availableLevelFilters = useMemo(() => {
+    if (currentUser?.role === ROLES.NATIONAL_COORDINATOR) {
+      return ["national", "site", "small_group"] as Activity["level"][];
+    }
+    if (currentUser?.role === ROLES.SITE_COORDINATOR) {
+      return ["site", "small_group"] as Activity["level"][];
+    }
+    if (currentUser?.role === ROLES.SMALL_GROUP_LEADER) {
+      return ["small_group"] as Activity["level"][];
+    }
+    return [] as Activity["level"][];
+  }, [currentUser?.role]);
+
+  const initialLevelFilterState = useMemo(() => {
+    const state: Record<Activity["level"], boolean> = { national: false, site: false, small_group: false };
+    availableLevelFilters.forEach(level => state[level] = true); // Default to true for available levels
+    return state;
+  }, [availableLevelFilters]);
+
   const [statusFilter, setStatusFilter] = useState<Record<Activity["status"], boolean>>({
     planned: true,
     executed: true,
     cancelled: true,
   });
-  const [levelFilter, setLevelFilter] = useState<Record<Activity["level"], boolean>>({
-    national: true,
-    site: true,
-    small_group: true,
-  });
+  const [levelFilter, setLevelFilter] = useState<Record<Activity["level"], boolean>>(initialLevelFilterState);
+
+  // Update levelFilter if availableLevelFilters change (e.g., on user load)
+  React.useEffect(() => {
+    setLevelFilter(initialLevelFilterState);
+  }, [initialLevelFilterState]);
+
 
   const dateFilteredActivities = useMemo(() => {
-    return applyDateFilter(mockActivities, dateFilter);
-  }, [dateFilter]);
+    return applyDateFilter(baseActivities, dateFilter);
+  }, [baseActivities, dateFilter]);
 
   const fullyFilteredActivities = useMemo(() => {
     return dateFilteredActivities.filter(activity => {
       const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             activity.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter[activity.status];
-      const matchesLevel = levelFilter[activity.level];
+      const matchesLevel = levelFilter[activity.level]; // This will now correctly only filter among available levels
       return matchesSearch && matchesStatus && matchesLevel;
     });
   }, [searchTerm, statusFilter, levelFilter, dateFilteredActivities]);
@@ -72,7 +111,10 @@ export default function ActivitiesPage() {
       return true;
     }
     if (currentUser.role === ROLES.SITE_COORDINATOR) {
-      return activity.level === 'site' && activity.siteId === currentUser.siteId;
+      // Site coordinator can edit site-level activities for their own site,
+      // OR small group activities within their own site.
+      return (activity.level === 'site' && activity.siteId === currentUser.siteId) ||
+             (activity.level === 'small_group' && mockSmallGroups.find(sg => sg.id === activity.smallGroupId)?.siteId === currentUser.siteId);
     }
     if (currentUser.role === ROLES.SMALL_GROUP_LEADER) {
       return activity.level === 'small_group' && activity.smallGroupId === currentUser.smallGroupId;
@@ -80,12 +122,24 @@ export default function ActivitiesPage() {
     return false;
   };
 
+  const pageDescription = useMemo(() => {
+    let contextMessage = `View and manage activities.`;
+    if (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser.siteId) {
+      const siteName = mockSites.find(s => s.id === currentUser.siteId)?.name;
+      contextMessage = `Viewing activities for ${siteName || 'your site'}.`;
+    } else if (currentUser?.role === ROLES.SMALL_GROUP_LEADER && currentUser.smallGroupId) {
+      const sgName = mockSmallGroups.find(sg => sg.id === currentUser.smallGroupId)?.name;
+      contextMessage = `Viewing activities for ${sgName || 'your small group'}.`;
+    }
+    return `${contextMessage} Filter: ${dateFilter.display}`;
+  }, [currentUser, dateFilter.display]);
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title="Activity Management"
-        description={`View and manage activities. Filter: ${dateFilter.display}`}
+        description={pageDescription}
         icon={ActivityIcon}
         actions={
           <Link href="/dashboard/activities/new" passHref>
@@ -135,17 +189,21 @@ export default function ActivitiesPage() {
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </DropdownMenuCheckboxItem>
                 ))}
-                <DropdownMenuLabel>Filter by Level</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                 {(Object.keys(levelFilter) as Activity["level"][]).map(level => (
-                  <DropdownMenuCheckboxItem
-                    key={level}
-                    checked={levelFilter[level]}
-                    onCheckedChange={(checked) => setLevelFilter(prev => ({...prev, [level]: !!checked}))}
-                  >
-                    {level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                {availableLevelFilters.length > 0 && (
+                  <>
+                    <DropdownMenuLabel>Filter by Level</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {availableLevelFilters.map(level => (
+                      <DropdownMenuCheckboxItem
+                        key={level}
+                        checked={levelFilter[level]}
+                        onCheckedChange={(checked) => setLevelFilter(prev => ({...prev, [level]: !!checked}))}
+                      >
+                        {level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -17,8 +17,10 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import type { Member } from "@/lib/types";
 import { DateRangeFilter, applyDateFilter, type DateFilterValue } from "@/components/shared/DateRangeFilter";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function MembersPage() {
+  const { currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
   const [typeFilter, setTypeFilter] = useState<Record<Member["type"], boolean>>({
@@ -29,10 +31,24 @@ export default function MembersPage() {
   const getSiteName = (siteId?: string) => siteId ? mockSites.find(s => s.id === siteId)?.name || "N/A" : "N/A";
   const getSmallGroupName = (smallGroupId?: string) => smallGroupId ? mockSmallGroups.find(sg => sg.id === smallGroupId)?.name || "N/A" : "N/A";
   
+  const baseMembers = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === ROLES.NATIONAL_COORDINATOR) {
+      return mockMembers;
+    }
+    if (currentUser.role === ROLES.SITE_COORDINATOR) {
+      return mockMembers.filter(mem => mem.siteId === currentUser.siteId);
+    }
+    if (currentUser.role === ROLES.SMALL_GROUP_LEADER) {
+      return mockMembers.filter(mem => mem.smallGroupId === currentUser.smallGroupId);
+    }
+    return [];
+  }, [currentUser]);
+  
   const dateFilteredMembers = useMemo(() => {
     // Ensure joinDate is used for filtering members
-    return applyDateFilter(mockMembers.map(m => ({...m, date: m.joinDate})), dateFilter) as Member[];
-  }, [dateFilter]);
+    return applyDateFilter(baseMembers.map(m => ({...m, date: m.joinDate})), dateFilter) as Member[];
+  }, [baseMembers, dateFilter]);
   
   const fullyFilteredMembers = useMemo(() => {
     return dateFilteredMembers.filter(member => {
@@ -48,12 +64,23 @@ export default function MembersPage() {
     });
   }, [searchTerm, typeFilter, dateFilteredMembers]);
 
+  const pageDescription = useMemo(() => {
+    let contextMessage = `View and manage members.`;
+    if (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser.siteId) {
+      const siteName = mockSites.find(s => s.id === currentUser.siteId)?.name;
+      contextMessage = `Viewing members for ${siteName || 'your site'}.`;
+    } else if (currentUser?.role === ROLES.SMALL_GROUP_LEADER && currentUser.smallGroupId) {
+      const sgName = mockSmallGroups.find(sg => sg.id === currentUser.smallGroupId)?.name;
+      contextMessage = `Viewing members of ${sgName || 'your small group'}.`;
+    }
+    return `${contextMessage} Filter: ${dateFilter.display}`;
+  }, [currentUser, dateFilter.display]);
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title="Member Management"
-        description={`View and manage members. Filter: ${dateFilter.display}`}
+        description={pageDescription}
         icon={Users}
         actions={
           <Link href="/dashboard/members/new" passHref>

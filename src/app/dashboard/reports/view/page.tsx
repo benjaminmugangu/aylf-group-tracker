@@ -41,17 +41,16 @@ export default function ViewReportsPage() {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   
-  const [reports, setReports] = useState<Report[]>(initialMockReports); // Manage reports in state
+  const [reports, setReports] = useState<Report[]>(initialMockReports); 
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ rangeKey: 'all_time', display: "All Time" });
-  const [levelFilter, setLevelFilter] = useState<Report["level"] | "all">("all");
+  
   const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rejectionNotes, setRejectionNotes] = useState("");
   const [isRejectingReport, setIsRejectingReport] = useState<Report | null>(null);
-
 
   const isMobile = useIsMobile();
 
@@ -69,12 +68,53 @@ export default function ViewReportsPage() {
         setIsModalOpen(true);
       }
     }
-  }, [reports]); // Depend on reports state
+  }, [reports]); 
+
+  const baseReports = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === ROLES.NATIONAL_COORDINATOR) {
+      return reports;
+    }
+    if (currentUser.role === ROLES.SITE_COORDINATOR) {
+      return reports.filter(
+        rep => rep.siteId === currentUser.siteId || 
+               (rep.level === 'small_group' && mockSmallGroups.find(sg => sg.id === rep.smallGroupId)?.siteId === currentUser.siteId)
+      );
+    }
+    if (currentUser.role === ROLES.SMALL_GROUP_LEADER) {
+      return reports.filter(rep => rep.smallGroupId === currentUser.smallGroupId);
+    }
+    return [];
+  }, [currentUser, reports]);
+
+  const availableLevelFilters = useMemo(() => {
+    if (currentUser?.role === ROLES.NATIONAL_COORDINATOR) {
+      return ["all", "national", "site", "small_group"] as (Report["level"] | "all")[];
+    }
+    if (currentUser?.role === ROLES.SITE_COORDINATOR) {
+      // Site coordinators see reports from their site or SGs within their site
+      return ["all", "site", "small_group"] as (Report["level"] | "all")[];
+    }
+    if (currentUser?.role === ROLES.SMALL_GROUP_LEADER) {
+      // Small group leaders only see their small group reports
+      return ["all", "small_group"] as (Report["level"] | "all")[];
+    }
+    return ["all"] as (Report["level"] | "all")[];
+  }, [currentUser?.role]);
+
+  const [levelFilter, setLevelFilter] = useState<Report["level"] | "all">("all");
+
+  // Reset level filter if options change and current filter is no longer valid
+  useEffect(() => {
+    if (!availableLevelFilters.includes(levelFilter)) {
+      setLevelFilter("all");
+    }
+  }, [availableLevelFilters, levelFilter]);
 
 
   const dateFilteredReports = useMemo(() => {
-    return applyDateFilter(reports.map(r => ({...r, date: r.submissionDate})), dateFilter) as Report[];
-  }, [reports, dateFilter]);
+    return applyDateFilter(baseReports.map(r => ({...r, date: r.submissionDate})), dateFilter) as Report[];
+  }, [baseReports, dateFilter]);
 
   const fullyFilteredReports = useMemo(() => {
     return dateFilteredReports.filter(report => {
@@ -88,11 +128,23 @@ export default function ViewReportsPage() {
                             (report.submittedBy && report.submittedBy.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (siteName && siteName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (smallGroupName && smallGroupName.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesLevel = levelFilter === "all" || report.level === levelFilter;
+      
+      let matchesLevel = levelFilter === "all";
+      if (levelFilter !== "all") {
+          if (currentUser?.role === ROLES.SITE_COORDINATOR) {
+            if (levelFilter === "site") matchesLevel = report.level === "site" && report.siteId === currentUser.siteId;
+            else if (levelFilter === "small_group") matchesLevel = report.level === "small_group" && mockSmallGroups.find(sg => sg.id === report.smallGroupId)?.siteId === currentUser.siteId;
+          } else if (currentUser?.role === ROLES.SMALL_GROUP_LEADER) {
+             matchesLevel = report.level === "small_group" && report.smallGroupId === currentUser.smallGroupId;
+          } else { // National Coordinator
+            matchesLevel = report.level === levelFilter;
+          }
+      }
+      
       const matchesStatus = statusFilter === "all" || report.status === statusFilter;
       return matchesSearch && matchesLevel && matchesStatus;
     }).sort((a,b) => new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime());
-  }, [searchTerm, levelFilter, statusFilter, dateFilteredReports]);
+  }, [searchTerm, levelFilter, statusFilter, dateFilteredReports, currentUser]);
 
   const handleViewDetails = (reportId: string) => {
     const report = reports.find(r => r.id === reportId);
@@ -110,9 +162,8 @@ export default function ViewReportsPage() {
     if (newStatus === "approved" && originalReport?.status === "rejected") {
       finalNotes = `Rejection overridden. Previous notes: "${originalReport.reviewNotes || 'N/A'}". Approved.`;
     } else if (newStatus === "approved") {
-      finalNotes = undefined; // Clear notes on approval unless it was an overridden rejection
+      finalNotes = undefined; 
     }
-
 
     setReports(prevReports => 
       prevReports.map(r => 
@@ -129,10 +180,8 @@ export default function ViewReportsPage() {
   const confirmRejectReport = () => {
     if (isRejectingReport) {
       handleReportStatusUpdate(isRejectingReport.id, "rejected", rejectionNotes);
-      // isRejectingReport and rejectionNotes will be reset by AlertDialog onOpenChange
     }
   };
-
 
   const getReportContextName = (report: Report): string | null => {
     if (report.level === "site" && report.siteId) {
@@ -170,12 +219,24 @@ export default function ViewReportsPage() {
     }
   };
 
+  const pageDescription = useMemo(() => {
+    let contextMessage = `Browse reports.`;
+    if (currentUser?.role === ROLES.SITE_COORDINATOR && currentUser.siteId) {
+      const siteName = mockSites.find(s => s.id === currentUser.siteId)?.name;
+      contextMessage = `Viewing reports for ${siteName || 'your site'}.`;
+    } else if (currentUser?.role === ROLES.SMALL_GROUP_LEADER && currentUser.smallGroupId) {
+      const sgName = mockSmallGroups.find(sg => sg.id === currentUser.smallGroupId)?.name;
+      contextMessage = `Viewing reports for ${sgName || 'your small group'}.`;
+    }
+    return `${contextMessage} Filter: ${dateFilter.display}`;
+  }, [currentUser, dateFilter.display]);
+
 
   return (
     <RoleBasedGuard allowedRoles={[ROLES.NATIONAL_COORDINATOR, ROLES.SITE_COORDINATOR, ROLES.SMALL_GROUP_LEADER]}>
       <PageHeader 
         title="View Submitted Reports"
-        description={`Browse reports. Filter: ${dateFilter.display}`}
+        description={pageDescription}
         icon={FileSearch}
       />
       
@@ -197,18 +258,24 @@ export default function ViewReportsPage() {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
               <DateRangeFilter onFilterChange={setDateFilter} initialRangeKey={dateFilter.rangeKey} />
-              <Select value={levelFilter} onValueChange={(value) => setLevelFilter(value as Report["level"] | "all")}>
-                <SelectTrigger className="w-full sm:w-[150px]">
-                  <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue placeholder="Level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="national">National</SelectItem>
-                  <SelectItem value="site">Site</SelectItem>
-                  <SelectItem value="small_group">Small Group</SelectItem>
-                </SelectContent>
-              </Select>
+              {availableLevelFilters.length > 1 && ( // Only show level filter if there's more than one option (or "all")
+                  <Select value={levelFilter} onValueChange={(value) => setLevelFilter(value as Report["level"] | "all")}>
+                    <SelectTrigger className="w-full sm:w-[180px]"> {/* Adjusted width */}
+                      <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <SelectValue placeholder="Level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableLevelFilters.map(levelOpt => (
+                        <SelectItem key={levelOpt} value={levelOpt}>
+                          {levelOpt === "all" 
+                            ? (currentUser?.role === ROLES.SITE_COORDINATOR ? "All (My Site)" : currentUser?.role === ROLES.SMALL_GROUP_LEADER ? "All (My Group)" : "All Levels")
+                            : levelOpt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                          }
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+              )}
               <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ReportStatus | "all")}>
                 <SelectTrigger className="w-full sm:w-[150px]">
                    <ListFilter className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -253,7 +320,10 @@ export default function ViewReportsPage() {
       {selectedReport && (
         <Dialog open={isModalOpen} onOpenChange={(isOpen) => {
             setIsModalOpen(isOpen);
-            if (!isOpen) window.location.hash = ''; 
+            if (!isOpen) {
+              window.location.hash = ''; 
+              setSelectedReport(null); // Clear selected report when modal closes
+            }
         }}>
           <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col">
             <DialogHeader>
@@ -383,56 +453,53 @@ export default function ViewReportsPage() {
             </ScrollArea>
             <DialogFooter className="mt-auto pt-4 border-t items-center">
               {currentUser?.role === ROLES.NATIONAL_COORDINATOR && selectedReport.status !== "approved" && (
-                <div className="flex gap-2 mr-auto">
-                  <Button 
+                 <Button 
                     variant="outline" 
-                    className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700"
+                    className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700 mr-auto"
                     onClick={() => handleReportStatusUpdate(selectedReport.id, "approved")}
                   >
                     <ThumbsUp className="mr-2 h-4 w-4"/> Approve
                   </Button>
-                  
-                  {selectedReport.status !== "rejected" && ( // Only show Reject button if not already rejected
-                    <AlertDialog onOpenChange={(open) => {
-                        if (!open) {
-                            setIsRejectingReport(null); 
-                            setRejectionNotes("");      
-                        }
-                    }}>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-                          onClick={() => setIsRejectingReport(selectedReport)} 
-                        >
-                          <ThumbsDown className="mr-2 h-4 w-4"/> Reject
-                        </Button>
-                      </AlertDialogTrigger>
-                      {isRejectingReport && selectedReport.id === isRejectingReport.id && (
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Reject Report: "{isRejectingReport.title}"</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Please provide a reason for rejecting this report. These notes will be visible to the submitter.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <Textarea 
-                            placeholder="Enter rejection notes here..."
-                            value={rejectionNotes}
-                            onChange={(e) => setRejectionNotes(e.target.value)}
-                            rows={4}
-                          />
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmRejectReport} disabled={!rejectionNotes.trim()}>Confirm Rejection</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      )}
-                    </AlertDialog>
-                  )}
-                </div>
               )}
-              <Button variant="outline" onClick={() => {setIsModalOpen(false); window.location.hash = '';}}>Close</Button>
+               {currentUser?.role === ROLES.NATIONAL_COORDINATOR && selectedReport.status !== "rejected" && (
+                  <AlertDialog onOpenChange={(open) => {
+                      if (!open) {
+                          setIsRejectingReport(null); 
+                          setRejectionNotes("");      
+                      }
+                  }}>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => setIsRejectingReport(selectedReport)} 
+                      >
+                        <ThumbsDown className="mr-2 h-4 w-4"/> Reject
+                      </Button>
+                    </AlertDialogTrigger>
+                    {isRejectingReport && selectedReport.id === isRejectingReport.id && (
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Reject Report: "{isRejectingReport.title}"</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Please provide a reason for rejecting this report. These notes will be visible to the submitter.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <Textarea 
+                          placeholder="Enter rejection notes here..."
+                          value={rejectionNotes}
+                          onChange={(e) => setRejectionNotes(e.target.value)}
+                          rows={4}
+                        />
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={confirmRejectReport} disabled={!rejectionNotes.trim()}>Confirm Rejection</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    )}
+                  </AlertDialog>
+              )}
+              <Button variant="outline" onClick={() => {setIsModalOpen(false); window.location.hash = ''; setSelectedReport(null);}}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -440,4 +507,3 @@ export default function ViewReportsPage() {
     </RoleBasedGuard>
   );
 }
-
