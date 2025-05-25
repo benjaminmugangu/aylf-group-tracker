@@ -21,7 +21,7 @@ body {
     --secondary-foreground: 220 15% 20%; /* Darker gray for text */
     --muted: 210 30% 88%; /* Even lighter cool gray */
     --muted-foreground: 220 10% 45%; /* Medium gray for muted text */
-    --accent: 50 95% 70%; /* Lighter Yellow accent */
+    --accent: 50 95% 75%; /* Even Lighter Yellow accent */
     --accent-foreground: 240 10% 20%; /* Dark grayish blue for text on yellow */
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -30,7 +30,7 @@ body {
     --ring: 175 55% 45%; /* Primary color for focus rings */
     
     --chart-1: 175 55% 40%; /* Primary - Teal */
-    --chart-2: 50 95% 70%;   /* Accent - Lighter Yellow */
+    --chart-2: 50 95% 75%;   /* Accent - Even Lighter Yellow */
     --chart-3: 45 80% 60%;  /* Gold/Yellow */
     --chart-4: 260 70% 65%; /* Vibrant Purple */
     --chart-5: 210 80% 60%; /* Vibrant Blue */
@@ -42,7 +42,7 @@ body {
     --sidebar-foreground: 220 20% 15%;
     --sidebar-primary: 175 55% 35%; 
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 50 95% 65%; /* Lighter Yellow for sidebar accent */
+    --sidebar-accent: 50 95% 70%; /* Lighter Yellow for sidebar accent */
     --sidebar-accent-foreground: 240 10% 20%; /* Dark text on sidebar yellow */
     --sidebar-border: 210 20% 80%;
     --sidebar-ring: 175 55% 40%;
@@ -62,7 +62,7 @@ body {
     --secondary-foreground: 210 15% 80%; /* Lighter text for secondary */
     --muted: 220 15% 20%; /* For subtle backgrounds or text */
     --muted-foreground: 210 15% 60%; /* Muted text color */
-    --accent: 50 90% 75%; /* Even Lighter Yellow accent */
+    --accent: 50 90% 80%; /* Very Light Yellow accent */
     --accent-foreground: 240 10% 20%; /* Dark grayish blue for text on yellow */
     --destructive: 0 60% 55%; /* Destructive action color */
     --destructive-foreground: 0 0% 100%;
@@ -71,7 +71,7 @@ body {
     --ring: 175 70% 55%; /* Primary color for focus rings */
 
     --chart-1: 175 70% 50%; /* Primary - Vibrant Cyan/Teal */
-    --chart-2: 50 90% 75%;   /* Accent - Even Lighter Yellow */
+    --chart-2: 50 90% 80%;   /* Accent - Very Lighter Yellow */
     --chart-3: 50 85% 65%;  /* Bright Gold/Yellow */
     --chart-4: 260 75% 70%; /* Bright Purple */
     --chart-5: 210 85% 65%; /* Bright Blue */
@@ -83,7 +83,7 @@ body {
     --sidebar-foreground: 210 20% 90%;
     --sidebar-primary: 175 70% 45%; 
     --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 50 90% 70%; /* Even Lighter Yellow for sidebar accent */
+    --sidebar-accent: 50 90% 75%; /* Lighter Yellow for sidebar accent */
     --sidebar-accent-foreground: 240 10% 20%; /* Dark text on sidebar yellow */
     --sidebar-border: 220 15% 20%;
     --sidebar-ring: 175 70% 50%;
