@@ -155,7 +155,7 @@ export default function SiteDetailPage() {
             <CardTitle>Quick Stats (Illustrative)</CardTitle>
             <CardDescription>Key metrics for this site.</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-center">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-primary">{Math.floor(Math.random() * 20) + 5}</p>
               <p className="text-sm text-muted-foreground">Activities Last Month</p>
