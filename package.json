@@ -11,6 +11,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
+
+  "author": "Benjamin MUGANGU",
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
     "@genkit-ai/next": "^1.8.0",
